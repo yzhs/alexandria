@@ -1,10 +1,21 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
 )
+
+func LogError(err interface{}) {
+	fmt.Fprintln(os.Stderr, err)
+}
+
+func TryLogError(err interface{}) {
+	if err != nil {
+		LogError(err)
+	}
+}
 
 func run(cmd string, args ...string) error {
 	return exec.Command(cmd, args...).Run()
@@ -28,6 +39,38 @@ func readTemplate(filename string) (string, error) {
 // directory.
 func writeTemp(id, data string) error {
 	return ioutil.WriteFile(config.tempDirectory+id+".tex", []byte(data), 0644)
+}
+
+// Get the file size in bytes.
+func getFileSize(file string) int64 {
+	f, err := os.Open(file)
+	if err != nil {
+		LogError(err)
+		return 0
+	}
+	defer f.Close()
+	stat, err := f.Stat()
+	if err != nil {
+		LogError(err)
+		return 0
+	}
+	return stat.Size()
+}
+
+// Compute the combined size of all files in a given directory.
+func getDirSize(dir string) (int, int64) {
+	directory, err := os.Open(dir)
+	TryLogError(err)
+	defer directory.Close()
+	fileInfo, err := directory.Readdir(0)
+	if err != nil {
+		panic(err)
+	}
+	result := int64(0)
+	for _, file := range fileInfo {
+		result += file.Size()
+	}
+	return len(fileInfo), result
 }
 
 // Get the time a given file was last modified as a Unix time.
