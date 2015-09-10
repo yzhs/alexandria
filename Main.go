@@ -4,11 +4,14 @@ import (
 	"fmt"
 	"os"
 	"runtime/pprof"
+
+	flag "github.com/ogier/pflag"
 )
 
-func usage() {
-	os.Exit(1)
-}
+const (
+	NAME    = "Alexandria"
+	VERSION = "0.1"
+)
 
 func initConfig() {
 	config.quality = 90
@@ -26,23 +29,32 @@ func initConfig() {
 }
 
 func main() {
-	if len(os.Args) <= 1 {
-		usage()
-	}
+	var index, profile, stats, version bool
+	flag.BoolVarP(&index, "index", "i", false, "\tUpdate the index")
+	flag.BoolVarP(&stats, "stats", "S", false, "\tPrint some statistics")
+	flag.BoolVarP(&version, "version", "v", false, "\tShow version")
+	flag.BoolVar(&profile, "profile", false, "\tEnable profiler")
+	flag.Parse()
+
 	initConfig()
 
-	if len(os.Args) == 2 && os.Args[1] == "-i" {
-		generateIndex()
-	} else if os.Args[1] == "-I" {
-		printStats()
-	} else {
+	if profile {
 		f, err := os.Create("alexandria.prof")
 		if err != nil {
 			panic(err)
 		}
 		pprof.StartCPUProfile(f)
 		defer pprof.StopCPUProfile()
+	}
 
+	switch {
+	case index:
+		generateIndex()
+	case stats:
+		printStats()
+	case version:
+		fmt.Println(NAME, VERSION)
+	default:
 		num, ids, err := findScrolls(os.Args[1:])
 		if err != nil {
 			panic(err)
