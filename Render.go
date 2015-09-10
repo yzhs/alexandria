@@ -12,8 +12,6 @@ type errorHandler struct {
 	err error
 }
 
-var config Config
-
 func latexToPdf(id string) error {
 	return run("rubber", "--module", "xelatex", "--force", "--into",
 		config.tempDirectory, config.tempDirectory+id+".tex")

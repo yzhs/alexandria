@@ -14,6 +14,8 @@ type Config struct {
 	swishConfig string
 }
 
+var config Config
+
 // The metadata contained in a scroll
 type Metadata struct {
 	source string
