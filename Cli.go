@@ -19,13 +19,18 @@ func initConfig() {
 
 	dir := os.Getenv("HOME") + "/.alexandria/"
 
+	config.alexandriaDirectory = dir
 	config.knowledgeDirectory = dir + "library/"
 	config.cacheDirectory = dir + "cache/"
 	config.templateDirectory = dir + "templates/"
 	config.tempDirectory = dir + "tmp/"
-	config.alexandriaDirectory = dir
 
 	config.swishConfig = dir + "swish++.conf"
+}
+
+func printStats() {
+	n, size := getDirSize(config.knowledgeDirectory)
+	fmt.Printf("The library contains %v scrolls with a total size of %.1f kiB.\n", n, float32(size)/1024.0)
 }
 
 func main() {

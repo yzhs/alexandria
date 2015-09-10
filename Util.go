@@ -14,10 +14,6 @@ func generateIndex() error {
 	return run("index++", "-c", config.swishConfig, config.knowledgeDirectory)
 }
 
-func printStats() {
-	// TODO <++>
-}
-
 func readScroll(id string) (string, error) {
 	result, err := ioutil.ReadFile(config.knowledgeDirectory + id + ".tex")
 	return string(result), err
