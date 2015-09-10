@@ -5,11 +5,11 @@ type Config struct {
 	quality int
 	dpi     int
 
+	alexandriaDirectory string
 	knowledgeDirectory  string
 	cacheDirectory      string
 	templateDirectory   string
 	tempDirectory       string
-	alexandriaDirectory string
 
 	swishConfig string
 }

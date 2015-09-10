@@ -24,10 +24,13 @@ func readTemplate(filename string) (string, error) {
 	return string(result), err
 }
 
+// Write a TeX file with the given name and content to Alexandria's temp
+// directory.
 func writeTemp(id, data string) error {
 	return ioutil.WriteFile(config.tempDirectory+id+".tex", []byte(data), 0644)
 }
 
+// Get the time a given file was last modified as a Unix time.
 func getModTime(file string) (int64, error) {
 	info, err := os.Stat(file)
 	if err != nil {
@@ -36,8 +39,12 @@ func getModTime(file string) (int64, error) {
 	return info.ModTime().Unix(), nil
 }
 
+// Cache the newest modification of any of the template files as a Unix time
+// (i.e. seconds since 1970-01-01).
 var templatesModTime int64 = -1
 
+// All recognized template files
+// TODO Generate the list⁈
 var templateFiles []string = []string{"algorithm_footer.tex",
 	"algorithm_header.tex", "axiom_footer.tex", "axiom_header.tex",
 	"corollary_footer.tex", "corollary_header.tex", "definition_footer.tex",
