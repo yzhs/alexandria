@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package main
+package backend
 
 import (
 	"io"
@@ -31,21 +31,21 @@ type errorHandler struct {
 
 func latexToPdf(id string) error {
 	return run("rubber", "--module", "xelatex", "--force", "--into",
-		config.tempDirectory, config.tempDirectory+id+".tex")
+		Config.TempDirectory, Config.TempDirectory+id+".tex")
 }
 
 func pdfToPng(id string) error {
-	return run("convert", "-quality", strconv.Itoa(config.quality),
-		"-density", strconv.Itoa(config.dpi), config.tempDirectory+id+".pdf",
-		config.cacheDirectory+id+".png")
+	return run("convert", "-quality", strconv.Itoa(Config.Quality),
+		"-density", strconv.Itoa(Config.Dpi), Config.TempDirectory+id+".pdf",
+		Config.CacheDirectory+id+".png")
 }
 
-func searchSwish(query []string) (int, []string, error) {
-	tmp := append([]string{"-c", config.swishConfig}, query...)
+func searchSwish(query []string) ([]string, error) {
+	tmp := append([]string{"-c", Config.SwishConfig}, query...)
 	cmd := exec.Command("search++", tmp...)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		return 0, nil, err
+		return nil, err
 	}
 	cmd.Start()
 
@@ -55,7 +55,7 @@ func searchSwish(query []string) (int, []string, error) {
 	stdout.Close()
 
 	output := strings.Split(string(buffer[:bytesRead]), "\n")
-	num, _ := strconv.Atoi(strings.TrimPrefix(output[0], "# results: "))
+	//num, _ := strconv.Atoi(strings.TrimPrefix(output[0], "# results: "))
 	output = output[1:]
 
 	result := make([]string, 100)
@@ -70,7 +70,7 @@ func searchSwish(query []string) (int, []string, error) {
 	}
 	result = result[:i]
 
-	return num, result, nil
+	return result, nil
 }
 
 func render(id string) (string, error) {
@@ -148,12 +148,12 @@ func processAllScrolls(ids []string) {
 	}
 }
 
-func findScrolls(query []string) (int, []string, error) {
-	num, ids, err := searchSwish(query)
+func FindScrolls(query []string) ([]string, error) {
+	ids, err := searchSwish(query)
 	if err != nil {
-		return 0, nil, err
+		return nil, err
 	}
 	processAllScrolls(ids)
 
-	return num, ids, nil
+	return ids, nil
 }

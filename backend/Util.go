@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package main
+package backend
 
 import (
 	"fmt"
@@ -38,40 +38,24 @@ func run(cmd string, args ...string) error {
 	return exec.Command(cmd, args...).Run()
 }
 
-func generateIndex() error {
-	return run("index++", "-c", config.swishConfig, config.knowledgeDirectory)
+func GenerateIndex() error {
+	return run("index++", "-c", Config.SwishConfig, Config.KnowledgeDirectory)
 }
 
 func readScroll(id string) (string, error) {
-	result, err := ioutil.ReadFile(config.knowledgeDirectory + id + ".tex")
+	result, err := ioutil.ReadFile(Config.KnowledgeDirectory + id + ".tex")
 	return string(result), err
 }
 
 func readTemplate(filename string) (string, error) {
-	result, err := ioutil.ReadFile(config.templateDirectory + filename + ".tex")
+	result, err := ioutil.ReadFile(Config.TemplateDirectory + filename + ".tex")
 	return string(result), err
 }
 
 // Write a TeX file with the given name and content to Alexandria's temp
 // directory.
 func writeTemp(id, data string) error {
-	return ioutil.WriteFile(config.tempDirectory+id+".tex", []byte(data), 0644)
-}
-
-// Get the file size in bytes.
-func getFileSize(file string) int64 {
-	f, err := os.Open(file)
-	if err != nil {
-		LogError(err)
-		return 0
-	}
-	defer f.Close()
-	stat, err := f.Stat()
-	if err != nil {
-		LogError(err)
-		return 0
-	}
-	return stat.Size()
+	return ioutil.WriteFile(Config.TempDirectory+id+".tex", []byte(data), 0644)
 }
 
 // Compute the combined size of all files in a given directory.
@@ -88,6 +72,11 @@ func getDirSize(dir string) (int, int64) {
 		result += file.Size()
 	}
 	return len(fileInfo), result
+}
+
+func ComputeStatistics() Statistics {
+	num, size := getDirSize(Config.KnowledgeDirectory)
+	return Statistics{num, size}
 }
 
 // Get the time a given file was last modified as a Unix time.
@@ -120,7 +109,7 @@ func isUpToDate(id string) bool {
 		templatesModTime = 0
 
 		for _, file := range templateFiles {
-			foo, err := getModTime(config.templateDirectory + file)
+			foo, err := getModTime(Config.TemplateDirectory + file)
 			if err != nil {
 				break
 			}
@@ -130,7 +119,7 @@ func isUpToDate(id string) bool {
 		}
 	}
 
-	info, err := os.Stat(config.cacheDirectory + id + ".png")
+	info, err := os.Stat(Config.CacheDirectory + id + ".png")
 	if err != nil {
 		return false
 	}
@@ -140,7 +129,7 @@ func isUpToDate(id string) bool {
 		return false
 	}
 
-	info, err = os.Stat(config.knowledgeDirectory + id + ".tex")
+	info, err = os.Stat(Config.KnowledgeDirectory + id + ".tex")
 	if err != nil {
 		return false // When in doubt, recompile
 	}

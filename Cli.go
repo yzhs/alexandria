@@ -23,30 +23,14 @@ import (
 	"runtime/pprof"
 
 	flag "github.com/ogier/pflag"
+
+	backend "github.com/yzhs/alexandria-go/backend"
 )
-
-const (
-	NAME    = "Alexandria"
-	VERSION = "0.1"
-)
-
-func initConfig() {
-	config.quality = 90
-	config.dpi = 137
-
-	dir := os.Getenv("HOME") + "/.alexandria/"
-
-	config.alexandriaDirectory = dir
-	config.knowledgeDirectory = dir + "library/"
-	config.cacheDirectory = dir + "cache/"
-	config.templateDirectory = dir + "templates/"
-	config.tempDirectory = dir + "tmp/"
-
-	config.swishConfig = dir + "swish++.conf"
-}
 
 func printStats() {
-	n, size := getDirSize(config.knowledgeDirectory)
+	stats := backend.ComputeStatistics()
+	n := stats.Num
+	size := stats.Size
 	fmt.Printf("The library contains %v scrolls with a total size of %.1f kiB.\n", n, float32(size)/1024.0)
 }
 
@@ -58,7 +42,7 @@ func main() {
 	flag.BoolVar(&profile, "profile", false, "\tEnable profiler")
 	flag.Parse()
 
-	initConfig()
+	backend.InitConfig()
 
 	if profile {
 		f, err := os.Create("alexandria.prof")
@@ -71,19 +55,19 @@ func main() {
 
 	switch {
 	case index:
-		generateIndex()
+		backend.GenerateIndex()
 	case stats:
 		printStats()
 	case version:
 		fmt.Println(NAME, VERSION)
 	default:
-		num, ids, err := findScrolls(os.Args[1:])
+		ids, err := backend.FindScrolls(os.Args[1:])
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf("There are %d matching scrolls.\n", num)
+		fmt.Printf("There are %d matching scrolls.\n", len(ids))
 		for _, id := range ids {
-			fmt.Println("file://" + config.cacheDirectory + id + ".png")
+			fmt.Println("file://" + backend.Config.CacheDirectory + id + ".png")
 		}
 	}
 }
