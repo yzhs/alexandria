@@ -19,6 +19,19 @@ package backend
 
 import "os"
 
+type Id string
+
+type Backend interface {
+	Search(query []string) ([]Id, error)
+	GenerateIndex() error
+	ComputeStatistics() Statistics
+}
+
+type Renderer interface {
+	Extension() string
+	Render(id Id) error
+}
+
 type Statistics struct {
 	Num  int
 	Size int64
