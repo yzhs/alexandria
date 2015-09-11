@@ -29,18 +29,19 @@ type errorHandler struct {
 	err error
 }
 
-func latexToPdf(id string) error {
+func latexToPdf(id Id) error {
 	return run("rubber", "--module", "xelatex", "--force", "--into",
-		Config.TempDirectory, Config.TempDirectory+id+".tex")
+		Config.TempDirectory, Config.TempDirectory+string(id)+".tex")
 }
 
-func pdfToPng(id string) error {
+func pdfToPng(i Id) error {
+	id := string(i)
 	return run("convert", "-quality", strconv.Itoa(Config.Quality),
 		"-density", strconv.Itoa(Config.Dpi), Config.TempDirectory+id+".pdf",
 		Config.CacheDirectory+id+".png")
 }
 
-func searchSwish(query []string) ([]string, error) {
+func searchSwish(query []string) ([]Id, error) {
 	tmp := append([]string{"-c", Config.SwishConfig}, query...)
 	cmd := exec.Command("search++", tmp...)
 	stdout, err := cmd.StdoutPipe()
@@ -58,14 +59,14 @@ func searchSwish(query []string) ([]string, error) {
 	//num, _ := strconv.Atoi(strings.TrimPrefix(output[0], "# results: "))
 	output = output[1:]
 
-	result := make([]string, 100)
+	result := make([]Id, 100)
 	i := 0
 	for _, line := range output {
 		if line == "" {
 			continue
 		}
 		fields := strings.Fields(line)
-		result[i] = strings.TrimSuffix(fields[len(fields)-1], ".tex")
+		result[i] = Id(strings.TrimSuffix(fields[len(fields)-1], ".tex"))
 		i++
 	}
 	result = result[:i]
@@ -73,7 +74,7 @@ func searchSwish(query []string) ([]string, error) {
 	return result, nil
 }
 
-func render(id string) (string, error) {
+func render(id Id) (string, error) {
 	doc, err := readTemplate("header")
 	if err != nil {
 		log.Fatal(err)
@@ -111,7 +112,7 @@ func render(id string) (string, error) {
 	return doc, nil
 }
 
-func processScroll(id string) error {
+func processScroll(id Id) error {
 	if isUpToDate(id) {
 		return nil
 	}
@@ -139,7 +140,7 @@ func processScroll(id string) error {
 	return nil
 }
 
-func processAllScrolls(ids []string) {
+func processAllScrolls(ids []Id) {
 	for _, id := range ids {
 		err := processScroll(id)
 		if err != nil {
@@ -148,7 +149,7 @@ func processAllScrolls(ids []string) {
 	}
 }
 
-func FindScrolls(query []string) ([]string, error) {
+func FindScrolls(query []string) ([]Id, error) {
 	ids, err := searchSwish(query)
 	if err != nil {
 		return nil, err

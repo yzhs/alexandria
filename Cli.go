@@ -30,8 +30,8 @@ import (
 func printStats() {
 	stats := backend.ComputeStatistics()
 	n := stats.Num
-	size := stats.Size
-	fmt.Printf("The library contains %v scrolls with a total size of %.1f kiB.\n", n, float32(size)/1024.0)
+	size := float32(stats.Size) / 1024.0
+	fmt.Printf("The library contains %v scrolls with a total size of %.1f kiB.\n", n, size)
 }
 
 func main() {
@@ -67,7 +67,7 @@ func main() {
 		}
 		fmt.Printf("There are %d matching scrolls.\n", len(ids))
 		for _, id := range ids {
-			fmt.Println("file://" + backend.Config.CacheDirectory + id + ".png")
+			fmt.Println("file://" + backend.Config.CacheDirectory + string(id) + ".png")
 		}
 	}
 }

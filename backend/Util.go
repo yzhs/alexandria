@@ -42,8 +42,8 @@ func GenerateIndex() error {
 	return run("index++", "-c", Config.SwishConfig, Config.KnowledgeDirectory)
 }
 
-func readScroll(id string) (string, error) {
-	result, err := ioutil.ReadFile(Config.KnowledgeDirectory + id + ".tex")
+func readScroll(id Id) (string, error) {
+	result, err := ioutil.ReadFile(Config.KnowledgeDirectory + string(id) + ".tex")
 	return string(result), err
 }
 
@@ -54,8 +54,8 @@ func readTemplate(filename string) (string, error) {
 
 // Write a TeX file with the given name and content to Alexandria's temp
 // directory.
-func writeTemp(id, data string) error {
-	return ioutil.WriteFile(Config.TempDirectory+id+".tex", []byte(data), 0644)
+func writeTemp(id Id, data string) error {
+	return ioutil.WriteFile(Config.TempDirectory+string(id)+".tex", []byte(data), 0644)
 }
 
 // Compute the combined size of all files in a given directory.
@@ -103,7 +103,7 @@ var templateFiles []string = []string{"algorithm_footer.tex",
 	"theorem_header.tex"}
 
 // Check whether a given scroll has to be recompiled
-func isUpToDate(id string) bool {
+func isUpToDate(id Id) bool {
 	if templatesModTime == -1 {
 		// Check template for modification times
 		templatesModTime = 0
@@ -119,7 +119,7 @@ func isUpToDate(id string) bool {
 		}
 	}
 
-	info, err := os.Stat(Config.CacheDirectory + id + ".png")
+	info, err := os.Stat(Config.CacheDirectory + string(id) + ".png")
 	if err != nil {
 		return false
 	}
@@ -129,7 +129,7 @@ func isUpToDate(id string) bool {
 		return false
 	}
 
-	info, err = os.Stat(Config.KnowledgeDirectory + id + ".tex")
+	info, err = os.Stat(Config.KnowledgeDirectory + string(id) + ".tex")
 	if err != nil {
 		return false // When in doubt, recompile
 	}
