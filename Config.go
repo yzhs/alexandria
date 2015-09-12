@@ -15,9 +15,14 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package backend
+package util
 
 import "os"
+
+const (
+	NAME    = "Alexandria"
+	VERSION = "0.1"
+)
 
 type Id string
 
@@ -32,9 +37,9 @@ type Renderer interface {
 	Render(id Id) error
 }
 
-type Statistics struct {
-	Num  int
-	Size int64
+type Statistics interface {
+	Num() int
+	Size() int64
 }
 
 // Configuration data of Alexandria
@@ -53,8 +58,8 @@ type Configuration struct {
 
 // The metadata contained in a scroll
 type Metadata struct {
-	source string
-	tags   []string
+	Source string
+	Tags   []string
 }
 
 var Config Configuration

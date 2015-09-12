@@ -24,13 +24,14 @@ import (
 
 	flag "github.com/ogier/pflag"
 
-	backend "github.com/yzhs/alexandria-go/backend"
+	. "github.com/yzhs/alexandria-go"
+	render "github.com/yzhs/alexandria-go/render/xelatex"
 )
 
 func printStats() {
-	stats := backend.ComputeStatistics()
-	n := stats.Num
-	size := float32(stats.Size) / 1024.0
+	stats := render.ComputeStatistics()
+	n := stats.Num()
+	size := float32(stats.Size()) / 1024.0
 	fmt.Printf("The library contains %v scrolls with a total size of %.1f kiB.\n", n, size)
 }
 
@@ -42,7 +43,7 @@ func main() {
 	flag.BoolVar(&profile, "profile", false, "\tEnable profiler")
 	flag.Parse()
 
-	backend.InitConfig()
+	InitConfig()
 
 	if profile {
 		f, err := os.Create("alexandria.prof")
@@ -55,19 +56,19 @@ func main() {
 
 	switch {
 	case index:
-		backend.GenerateIndex()
+		render.GenerateIndex()
 	case stats:
 		printStats()
 	case version:
 		fmt.Println(NAME, VERSION)
 	default:
-		ids, err := backend.FindScrolls(os.Args[1:])
+		ids, err := render.FindScrolls(os.Args[1:])
 		if err != nil {
 			panic(err)
 		}
 		fmt.Printf("There are %d matching scrolls.\n", len(ids))
 		for _, id := range ids {
-			fmt.Println("file://" + backend.Config.CacheDirectory + string(id) + ".png")
+			fmt.Println("file://" + Config.CacheDirectory + string(id) + ".png")
 		}
 	}
 }

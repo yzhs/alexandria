@@ -15,18 +15,21 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package backend
+package parser
 
 import (
 	"strings"
+
+	. "github.com/yzhs/alexandria-go"
 )
 
 // Figure out what type of a document we have
-func documentType(m Metadata) string {
-	return m.tags[0]
+func DocumentType(m Metadata) string {
+	return m.Tags[0]
 }
 
-func parseTags(doc string) Metadata {
+// Parse the tags in the given scroll content.
+func ParseTags(doc string) Metadata {
 	var source string
 	var tags []string
 	var found_source bool

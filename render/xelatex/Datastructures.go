@@ -15,9 +15,17 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package main
+package xelatex
 
-const (
-	NAME    = "Alexandria"
-	VERSION = "0.1"
-)
+type Stats struct {
+	num  int
+	size int64
+}
+
+func (s Stats) Num() int {
+	return s.num
+}
+
+func (s Stats) Size() int64 {
+	return s.size
+}

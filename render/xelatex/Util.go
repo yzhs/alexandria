@@ -15,24 +15,15 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package backend
+package xelatex
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
+
+	. "github.com/yzhs/alexandria-go"
 )
-
-func LogError(err interface{}) {
-	fmt.Fprintln(os.Stderr, err)
-}
-
-func TryLogError(err interface{}) {
-	if err != nil {
-		LogError(err)
-	}
-}
 
 func run(cmd string, args ...string) error {
 	return exec.Command(cmd, args...).Run()
@@ -76,7 +67,7 @@ func getDirSize(dir string) (int, int64) {
 
 func ComputeStatistics() Statistics {
 	num, size := getDirSize(Config.KnowledgeDirectory)
-	return Statistics{num, size}
+	return Stats{num, size}
 }
 
 // Get the time a given file was last modified as a Unix time.
