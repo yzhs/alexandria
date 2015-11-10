@@ -86,7 +86,8 @@ var templateFiles []string = []string{"algorithm_footer.tex",
 	"corollary_footer.tex", "corollary_header.tex", "definition_footer.tex",
 	"definition_header.tex", "example_footer.tex", "example_header.tex",
 	"footer.tex", "header.tex", "lemma_footer.tex", "lemma_header.tex",
-	"proposition_footer.tex", "proposition_header.tex", "theorem_footer.tex",
+	"proposition_footer.tex", "proposition_header.tex",
+	"remark_header.tex", "remark_footer.tex", "theorem_footer.tex",
 	"theorem_header.tex"}
 
 // Check whether a given scroll has to be recompiled
