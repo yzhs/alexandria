@@ -33,8 +33,14 @@ type errorHandler struct {
 }
 
 func latexToPdf(id Id) error {
-	return run("rubber", "--module", "xelatex", "--force", "--into",
-		Config.TempDirectory, Config.TempDirectory+string(id)+".tex")
+	// TODO return error message if the execution fails
+	msg, err := exec.Command("rubber", "--module", "xelatex", "--force", "--into",
+		Config.TempDirectory, Config.TempDirectory+string(id)+".tex").CombinedOutput()
+	if err != nil {
+		log.Fatal(string(msg))
+		return err
+	}
+	return nil
 }
 
 func pdfToPng(i Id) error {
