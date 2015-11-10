@@ -66,12 +66,11 @@ func searchSwish(query []string) ([]Id, error) {
 
 	output := strings.Split(string(buffer[:bytesRead]), "\n")
 	//num, _ := strconv.Atoi(strings.TrimPrefix(output[0], "# results: "))
-	output = output[1:]
 
 	result := make([]Id, 100)
 	i := 0
 	for _, line := range output {
-		if line == "" {
+		if line == "" || strings.HasPrefix(line, "# ") {
 			continue
 		}
 		fields := strings.Fields(line)
