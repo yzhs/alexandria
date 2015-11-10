@@ -25,12 +25,8 @@ import (
 	. "github.com/yzhs/alexandria-go"
 )
 
-func run(cmd string, args ...string) error {
-	return exec.Command(cmd, args...).Run()
-}
-
 func GenerateIndex() error {
-	return run("index++", "-c", Config.SwishConfig, Config.KnowledgeDirectory)
+	return exec.Command("index++", "-c", Config.SwishConfig, Config.KnowledgeDirectory).Run()
 }
 
 func readScroll(id Id) (string, error) {
