@@ -44,8 +44,9 @@ type Statistics interface {
 
 // Configuration data of Alexandria
 type Configuration struct {
-	Quality int
-	Dpi     int
+	Quality    int
+	Dpi        int
+	MaxResults int
 
 	AlexandriaDirectory string
 	KnowledgeDirectory  string
@@ -67,6 +68,7 @@ var Config Configuration
 func InitConfig() {
 	Config.Quality = 90
 	Config.Dpi = 137
+	Config.MaxResults = 1000
 
 	dir := os.Getenv("HOME") + "/.alexandria/"
 
