@@ -43,6 +43,13 @@ func statsHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, printStats())
 }
 
+func editHandler(w http.ResponseWriter, r *http.Request) {
+	headers := w.Header()
+	headers["Content-Type"] = []string{"application/x-alexandria-edit"}
+	id := r.FormValue("id")
+	fmt.Fprintf(w, id)
+}
+
 func mainHandler(w http.ResponseWriter, r *http.Request) {
 	html, err := loadHtmlTemplate("main")
 	if err != nil {
@@ -120,6 +127,7 @@ func main() {
 	http.HandleFunc("/", mainHandler)
 	http.HandleFunc("/stats", statsHandler)
 	http.HandleFunc("/search", queryHandler)
+	http.HandleFunc("/edit", editHandler)
 	serveDirectory("/images/", Config.CacheDirectory)
 	serveDirectory("/styles/", Config.TemplateDirectory+"styles")
 	http.ListenAndServe("127.0.0.1:8080", nil)
