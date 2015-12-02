@@ -59,7 +59,7 @@ func searchSwish(query []string) ([]Id, error) {
 	}
 	cmd.Start()
 
-	buffer := make([]byte, 65536)
+	buffer := make([]byte, 1048576)
 	bytesRead, _ := io.ReadFull(stdout, buffer)
 	cmd.Wait()
 	stdout.Close()
