@@ -44,7 +44,6 @@ func statsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func mainHandler(w http.ResponseWriter, r *http.Request) {
-	// TODO read html template file
 	html, err := loadHtmlTemplate("main")
 	if err != nil {
 		fmt.Fprintf(w, "%v", err)
