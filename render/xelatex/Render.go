@@ -51,7 +51,7 @@ func pdfToPng(i Id) error {
 }
 
 func searchSwish(query []string) ([]Id, error) {
-	tmp := append([]string{"-c", Config.SwishConfig}, query...)
+	tmp := append([]string{"-c", Config.SwishConfig, "--max-results=" + strconv.Itoa(Config.MaxResults)}, query...)
 	cmd := exec.Command("search++", tmp...)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
@@ -67,7 +67,7 @@ func searchSwish(query []string) ([]Id, error) {
 	output := strings.Split(string(buffer[:bytesRead]), "\n")
 	//num, _ := strconv.Atoi(strings.TrimPrefix(output[0], "# results: "))
 
-	result := make([]Id, 100)
+	result := make([]Id, Config.MaxResults)
 	i := 0
 	for _, line := range output {
 		if line == "" || strings.HasPrefix(line, "# ") {
