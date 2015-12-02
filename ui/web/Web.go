@@ -110,7 +110,7 @@ func main() {
 		defer pprof.StopCPUProfile()
 	}
 
-	// TODO run when there is something new render.GenerateIndex()
+	// TODO run render.GenerateIndex() when there is something new
 
 	if version {
 		fmt.Println(NAME, VERSION)
