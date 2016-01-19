@@ -30,6 +30,7 @@ func DocumentType(m Metadata) string {
 
 // Parse the tags in the given scroll content.
 func ParseTags(doc string) Metadata {
+	// TODO Handle different types of tags: @source, @doctype, @keywords, and normal tags.
 	var source string
 	var tags []string
 	var found_source bool
