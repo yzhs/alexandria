@@ -45,9 +45,10 @@ func latexToPdf(id Id) error {
 
 func pdfToPng(i Id) error {
 	id := string(i)
-	return exec.Command("convert", "-quality", strconv.Itoa(Config.Quality),
-		"-density", strconv.Itoa(Config.Dpi), Config.TempDirectory+id+".pdf",
-		Config.CacheDirectory+id+".png").Run()
+	return exec.Command("convert", "-trim",
+		"-quality", strconv.Itoa(Config.Quality),
+		"-density", strconv.Itoa(Config.Dpi),
+		Config.TempDirectory+id+".pdf", Config.CacheDirectory+id+".png").Run()
 }
 
 func searchSwish(query []string) ([]Id, error) {
