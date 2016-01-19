@@ -130,5 +130,5 @@ func main() {
 	http.HandleFunc("/edit", editHandler)
 	serveDirectory("/images/", Config.CacheDirectory)
 	serveDirectory("/styles/", Config.TemplateDirectory+"styles")
-	http.ListenAndServe("127.0.0.1:8080", nil)
+	http.ListenAndServe("127.0.0.1:41665", nil)
 }
