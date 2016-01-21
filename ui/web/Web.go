@@ -29,11 +29,10 @@ import (
 	flag "github.com/ogier/pflag"
 
 	. "github.com/yzhs/alexandria-go"
-	render "github.com/yzhs/alexandria-go/render/xelatex"
 )
 
 func printStats() string {
-	stats := render.ComputeStatistics()
+	stats := ComputeStatistics()
 	n := stats.Num()
 	size := float32(stats.Size()) / 1024.0
 	return fmt.Sprintf("The library contains %v scrolls with a total size of %.1f kiB.\n", n, size)
@@ -87,7 +86,7 @@ func min(a, b int) int {
 
 func queryHandler(w http.ResponseWriter, r *http.Request) {
 	query := r.FormValue("q")
-	ids, err := render.FindScrolls(strings.Split(query, " "))
+	ids, err := FindScrolls(strings.Split(query, " "))
 	if err != nil {
 		panic(err)
 	}
@@ -117,7 +116,7 @@ func main() {
 		defer pprof.StopCPUProfile()
 	}
 
-	// TODO run render.GenerateIndex() when there is something new
+	// TODO run GenerateIndex() when there is something new
 
 	if version {
 		fmt.Println(NAME, VERSION)

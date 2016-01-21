@@ -25,11 +25,10 @@ import (
 	flag "github.com/ogier/pflag"
 
 	. "github.com/yzhs/alexandria-go"
-	render "github.com/yzhs/alexandria-go/render/xelatex"
 )
 
 func printStats() {
-	stats := render.ComputeStatistics()
+	stats := ComputeStatistics()
 	n := stats.Num()
 	size := float32(stats.Size()) / 1024.0
 	fmt.Printf("The library contains %v scrolls with a total size of %.1f kiB.\n", n, size)
@@ -56,13 +55,13 @@ func main() {
 
 	switch {
 	case index:
-		render.GenerateIndex()
+		GenerateIndex()
 	case stats:
 		printStats()
 	case version:
 		fmt.Println(NAME, VERSION)
 	default:
-		ids, err := render.FindScrolls(os.Args[1:])
+		ids, err := FindScrolls(os.Args[1:])
 		if err != nil {
 			panic(err)
 		}

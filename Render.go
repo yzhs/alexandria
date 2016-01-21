@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package xelatex
+package alexandria
 
 import (
 	"io"
@@ -23,9 +23,6 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
-
-	. "github.com/yzhs/alexandria-go"
-	parser "github.com/yzhs/alexandria-go/parser"
 )
 
 type errorHandler struct {
@@ -95,16 +92,16 @@ func render(id Id) (string, error) {
 		log.Fatal(err)
 		return "", err
 	}
-	tags := parser.ParseTags(scroll)
+	tags := ParseTags(scroll)
 
-	temp, err := readTemplate(parser.DocumentType(tags) + "_header")
+	temp, err := readTemplate(DocumentType(tags) + "_header")
 	if err != nil {
 		log.Fatal(err)
 		return "", err
 	}
 	doc += temp + scroll
 
-	temp, err = readTemplate(parser.DocumentType(tags) + "_footer")
+	temp, err = readTemplate(DocumentType(tags) + "_footer")
 	if err != nil {
 		log.Fatal(err)
 		return "", err

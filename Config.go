@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package util
+package alexandria
 
 import "os"
 
@@ -54,6 +54,7 @@ type Configuration struct {
 	TemplateDirectory   string
 	TempDirectory       string
 
+	// TODO move code specific to the swish backend elsewhere
 	SwishConfig string
 }
 
