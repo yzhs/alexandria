@@ -17,6 +17,13 @@
 
 package alexandria
 
+import "os"
+
+const (
+	NAME    = "Alexandria"
+	VERSION = "0.1"
+)
+
 type Stats struct {
 	num  int
 	size int64
@@ -28,4 +35,62 @@ func (s Stats) Num() int {
 
 func (s Stats) Size() int64 {
 	return s.size
+}
+
+type Id string
+
+type Backend interface {
+	Search(query []string) ([]Id, error)
+	GenerateIndex() error
+	ComputeStatistics() Statistics
+}
+
+type Renderer interface {
+	Extension() string
+	Render(id Id) error
+}
+
+type Statistics interface {
+	Num() int
+	Size() int64
+}
+
+// Configuration data of Alexandria
+type Configuration struct {
+	Quality    int
+	Dpi        int
+	MaxResults int
+
+	AlexandriaDirectory string
+	KnowledgeDirectory  string
+	CacheDirectory      string
+	TemplateDirectory   string
+	TempDirectory       string
+
+	// TODO move code specific to the swish backend elsewhere
+	SwishConfig string
+}
+
+// The metadata contained in a scroll
+type Metadata struct {
+	Source string
+	Tags   []string
+}
+
+var Config Configuration
+
+func InitConfig() {
+	Config.Quality = 90
+	Config.Dpi = 137
+	Config.MaxResults = 1000
+
+	dir := os.Getenv("HOME") + "/.alexandria/"
+
+	Config.AlexandriaDirectory = dir
+	Config.KnowledgeDirectory = dir + "library/"
+	Config.CacheDirectory = dir + "cache/"
+	Config.TemplateDirectory = dir + "templates/"
+	Config.TempDirectory = dir + "tmp/"
+
+	Config.SwishConfig = dir + "swish++.conf"
 }
