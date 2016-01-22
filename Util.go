@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"os/exec"
 )
 
 func LogError(err interface{}) {
@@ -32,10 +31,6 @@ func TryLogError(err interface{}) {
 	if err != nil {
 		LogError(err)
 	}
-}
-
-func GenerateIndex() error {
-	return exec.Command("index++", "-c", Config.SwishConfig, Config.KnowledgeDirectory).Run()
 }
 
 func readScroll(id Id) (string, error) {
