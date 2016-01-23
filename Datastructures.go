@@ -73,7 +73,8 @@ type Configuration struct {
 
 // The metadata contained in a scroll
 type Metadata struct {
-	Source string
+	Type   string
+	Source []string
 	Tags   []string
 }
 

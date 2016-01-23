@@ -50,7 +50,7 @@ func scrollToLatex(id Id) error {
 		log.Fatal(err)
 		return err
 	}
-	tags := ParseTags(scroll)
+	tags := ParseMetadata(scroll)
 
 	e.readTemplate("header")
 	e.readTemplate(DocumentType(tags) + "_header")
