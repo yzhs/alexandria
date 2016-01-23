@@ -90,7 +90,7 @@ func ParseMetadata(doc string) Metadata {
 		case strings.HasPrefix(line, "@source "):
 			source = append(source, strings.TrimSpace(strings.TrimPrefix(line, "@source ")))
 		case strings.HasPrefix(line, "@type "):
-			tmp := strings.TrimSpace(strings.TrimPrefix(line, "@source "))
+			tmp := strings.TrimSpace(strings.TrimPrefix(line, "@type "))
 			if scroll_type != "" {
 				panic(fmt.Sprintf("Scroll has two different types: %s and %s", scroll_type, tmp))
 			} else {
