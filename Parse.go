@@ -101,9 +101,5 @@ func ParseMetadata(doc string) Metadata {
 		}
 	}
 
-	// Handle the old format
-	if scroll_type == "" {
-		scroll_type = tags[0]
-	}
 	return Metadata{scroll_type, source, tags}
 }
