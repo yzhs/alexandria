@@ -38,7 +38,8 @@ func findMetadataLines(doc string) []string {
 		}
 
 		// If the current line does not begin with a LaTeX comment, we
-		// have not yet encountered the last block of comments.
+		// have not yet encountered the last block of comments, so we
+		// should discard all data gathered so far.
 		if line[0] != '%' {
 			metadata = make([]string, 0, 10)
 			continue

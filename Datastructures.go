@@ -24,17 +24,18 @@ const (
 	VERSION = "0.1"
 )
 
+// Statistics concerning the size of the library.
 type Stats struct {
-	num  int
-	size int64
+	num_scrolls int
+	file_size   int64
 }
 
 func (s Stats) Num() int {
-	return s.num
+	return s.num_scrolls
 }
 
 func (s Stats) Size() int64 {
-	return s.size
+	return s.file_size
 }
 
 type Id string

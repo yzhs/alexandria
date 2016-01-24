@@ -24,10 +24,12 @@ import (
 	"strings"
 )
 
+// Run index++ to generate a (new) swish++ index file.
 func GenerateIndex() error {
 	return exec.Command("index++", "-c", Config.SwishConfig, Config.KnowledgeDirectory).Run()
 }
 
+// Search the swish index for a given query.
 func searchSwish(query []string) ([]Id, error) {
 	tmp := append([]string{"-c", Config.SwishConfig, "--max-results=" + strconv.Itoa(Config.MaxResults)}, query...)
 	cmd := exec.Command("search++", tmp...)
@@ -60,6 +62,7 @@ func searchSwish(query []string) ([]Id, error) {
 	return result, nil
 }
 
+// Get a list of scrolls matching the query.
 func FindScrolls(query []string) ([]Id, error) {
 	ids, err := searchSwish(query)
 	if err != nil {

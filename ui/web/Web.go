@@ -31,6 +31,7 @@ import (
 	. "github.com/yzhs/alexandria-go"
 )
 
+// Generate a HTML file describing the size of the library.
 func printStats() string {
 	stats := ComputeStatistics()
 	n := stats.Num()
@@ -38,10 +39,12 @@ func printStats() string {
 	return fmt.Sprintf("The library contains %v scrolls with a total size of %.1f kiB.\n", n, size)
 }
 
+// Send the statistics page to the client.
 func statsHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, printStats())
 }
 
+// Handle the edit-link, causing the browser to open that scroll in an editor.
 func editHandler(w http.ResponseWriter, r *http.Request) {
 	headers := w.Header()
 	headers["Content-Type"] = []string{"application/x-alexandria-edit"}
@@ -49,6 +52,7 @@ func editHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, id)
 }
 
+// Serve the search page.
 func mainHandler(w http.ResponseWriter, r *http.Request) {
 	html, err := loadHtmlTemplate("main")
 	if err != nil {
@@ -84,6 +88,7 @@ func min(a, b int) int {
 	return a
 }
 
+// Handle a query and serve the results.
 func queryHandler(w http.ResponseWriter, r *http.Request) {
 	query := r.FormValue("q")
 	ids, err := FindScrolls(strings.Split(query, " "))

@@ -33,11 +33,13 @@ func TryLogError(err interface{}) {
 	}
 }
 
+// Load the content of a given scroll from disk.
 func readScroll(id Id) (string, error) {
 	result, err := ioutil.ReadFile(Config.KnowledgeDirectory + string(id) + ".tex")
 	return string(result), err
 }
 
+// Load the content of a template file with the given name.
 func readTemplate(filename string) (string, error) {
 	result, err := ioutil.ReadFile(Config.TemplateDirectory + filename + ".tex")
 	return string(result), err
