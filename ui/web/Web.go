@@ -24,7 +24,6 @@ import (
 	"net/http"
 	"os"
 	"runtime/pprof"
-	"strings"
 
 	flag "github.com/ogier/pflag"
 
@@ -91,7 +90,7 @@ func min(a, b int) int {
 // Handle a query and serve the results.
 func queryHandler(w http.ResponseWriter, r *http.Request) {
 	query := r.FormValue("q")
-	ids, err := FindScrolls(strings.Split(query, " "))
+	ids, err := FindScrolls(query)
 	if err != nil {
 		panic(err)
 	}

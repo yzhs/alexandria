@@ -67,9 +67,6 @@ type Configuration struct {
 	CacheDirectory      string
 	TemplateDirectory   string
 	TempDirectory       string
-
-	// TODO move code specific to the swish backend elsewhere
-	SwishConfig string
 }
 
 // The metadata contained in a scroll
@@ -77,6 +74,12 @@ type Metadata struct {
 	Type   string
 	Source []string
 	Tags   []string
+}
+
+type Scroll struct {
+	Metadata
+	Id      Id
+	Content string
 }
 
 var Config Configuration
@@ -93,6 +96,4 @@ func InitConfig() {
 	Config.CacheDirectory = dir + "cache/"
 	Config.TemplateDirectory = dir + "templates/"
 	Config.TempDirectory = dir + "tmp/"
-
-	Config.SwishConfig = dir + "swish++.conf"
 }

@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"os"
 	"runtime/pprof"
+	"strings"
 
 	flag "github.com/ogier/pflag"
 
@@ -61,7 +62,7 @@ func main() {
 	case version:
 		fmt.Println(NAME, VERSION)
 	default:
-		ids, err := FindScrolls(os.Args[1:])
+		ids, err := FindScrolls(strings.Join(os.Args[1:], " "))
 		if err != nil {
 			panic(err)
 		}
