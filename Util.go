@@ -67,11 +67,6 @@ func getDirSize(dir string) (int, int64) {
 	return len(fileInfo), result
 }
 
-func ComputeStatistics() Statistics {
-	num, size := getDirSize(Config.KnowledgeDirectory)
-	return Stats{num, size}
-}
-
 // Get the time a given file was last modified as a Unix time.
 func getModTime(file string) (int64, error) {
 	info, err := os.Stat(file)

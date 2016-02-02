@@ -52,9 +52,13 @@ func GenerateIndex() error {
 	return nil
 }
 
+func openIndex() (bleve.Index, error) {
+	return bleve.Open(Config.AlexandriaDirectory + "Alexandria.bleve")
+}
+
 // Search the swish index for a given query.
 func searchBleve(queryString string) ([]Id, error) {
-	index, err := bleve.Open(Config.AlexandriaDirectory + "Alexandria.bleve")
+	index, err := openIndex()
 	if err != nil {
 		LogError(err)
 		return nil, err
@@ -86,4 +90,24 @@ func FindScrolls(query string) ([]Id, error) {
 	ProcessScrolls(ids)
 
 	return ids, nil
+}
+
+func ComputeStatistics() Statistics {
+	index, err := openIndex()
+	if err != nil {
+		LogError(err)
+	}
+	defer index.Close()
+
+	num, size := getDirSize(Config.KnowledgeDirectory)
+	if err == nil {
+		tmp, err := index.DocCount()
+		if err != nil {
+			LogError(err)
+		} else {
+			num = int(tmp)
+		}
+	}
+
+	return Stats{num, size}
 }
