@@ -19,10 +19,17 @@ package alexandria
 
 import (
 	"io/ioutil"
+	"os"
 	"strings"
+	"time"
 
 	"github.com/blevesearch/bleve"
 )
+
+func touch(file string) error {
+	now := time.Now()
+	return os.Chtimes(file, now, now)
+}
 
 // Run index++ to generate a (new) swish++ index file.
 func GenerateIndex() error {
@@ -42,9 +49,28 @@ func GenerateIndex() error {
 		return err
 	}
 
-	for _, f := range files {
-		id := strings.TrimSuffix(f.Name(), ".tex")
-		contentBytes, err := ioutil.ReadFile(Config.KnowledgeDirectory + f.Name())
+	indexUpdateFile := Config.AlexandriaDirectory + "index_updated"
+	indexUpdateTime, err := getModTime(indexUpdateFile)
+	if err != nil {
+		LogError(err)
+		return nil
+	}
+	// Save the time of this indexing operation
+	_ = touch(Config.AlexandriaDirectory + "index_updated")
+	for _, file := range files {
+		// Check whether the scroll is newer than the index.
+		modTime, err := getModTime(Config.KnowledgeDirectory + file.Name())
+		if err != nil {
+			LogError(err)
+			continue
+		}
+		id := strings.TrimSuffix(file.Name(), ".tex")
+		if modTime < indexUpdateTime {
+			continue
+		}
+
+		// Load and parse the scroll content
+		contentBytes, err := ioutil.ReadFile(Config.KnowledgeDirectory + file.Name())
 		TryLogError(err)
 		content := string(contentBytes)
 		metadata := ParseMetadata(content)
