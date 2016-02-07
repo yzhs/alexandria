@@ -57,6 +57,8 @@ func GenerateIndex() error {
 	}
 	// Save the time of this indexing operation
 	_ = touch(Config.AlexandriaDirectory + "index_updated")
+
+	batch := index.NewBatch()
 	for _, file := range files {
 		// Check whether the scroll is newer than the index.
 		modTime, err := getModTime(Config.KnowledgeDirectory + file.Name())
@@ -76,8 +78,9 @@ func GenerateIndex() error {
 		metadata := ParseMetadata(content)
 		scroll := Scroll{metadata, Id(id), content}
 
-		index.Index(id, scroll)
+		batch.Index(id, scroll)
 	}
+	index.Batch(batch)
 
 	return nil
 }
