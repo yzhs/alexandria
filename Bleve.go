@@ -26,10 +26,14 @@ import (
 
 // Run index++ to generate a (new) swish++ index file.
 func GenerateIndex() error {
-	mapping := bleve.NewIndexMapping()
-	index, err := bleve.New(Config.AlexandriaDirectory+"Alexandria.bleve", mapping)
+	// Try to open an existing index or create a new one if none exists.
+	index, err := openIndex()
 	if err != nil {
-		return err
+		mapping := bleve.NewIndexMapping()
+		index, err = bleve.New(Config.AlexandriaDirectory+"bleve", mapping)
+		if err != nil {
+			return err
+		}
 	}
 	defer index.Close()
 
@@ -52,8 +56,9 @@ func GenerateIndex() error {
 	return nil
 }
 
+// Open the bleve index
 func openIndex() (bleve.Index, error) {
-	return bleve.Open(Config.AlexandriaDirectory + "Alexandria.bleve")
+	return bleve.Open(Config.AlexandriaDirectory + "bleve")
 }
 
 // Search the swish index for a given query.
