@@ -41,7 +41,7 @@ func findMetadataLines(doc string) []string {
 		// have not yet encountered the last block of comments, so we
 		// should discard all data gathered so far.
 		if line[0] != '%' {
-			metadata = make([]string, 0, 10)
+			metadata = make([]string, 0, 100) // FIXME magic constant
 			continue
 		}
 		// Remove any leading % and whitespaces
