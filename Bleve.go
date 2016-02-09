@@ -101,6 +101,7 @@ func searchBleve(queryString string) ([]Id, error) {
 
 	query := bleve.NewQueryStringQuery(queryString)
 	search := bleve.NewSearchRequest(query)
+	search.Size = Config.MaxResults
 	searchResults, err := index.Search(search)
 	if err != nil {
 		LogError(err)
