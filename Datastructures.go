@@ -82,6 +82,11 @@ type Scroll struct {
 	Content string
 }
 
+type Results struct {
+	Ids   []Id
+	Total int
+}
+
 var Config Configuration
 
 func InitConfig() {

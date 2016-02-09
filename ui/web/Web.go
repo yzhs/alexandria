@@ -66,9 +66,10 @@ func loadHtmlTemplate(name string) ([]byte, error) {
 }
 
 type result struct {
-	Query      string
-	Matches    []Id
-	NumMatches int
+	Query        string
+	Matches      []Id
+	NumMatches   int
+	TotalMatches int
 }
 
 func renderTemplate(w http.ResponseWriter, templateFile string, resultData result) {
@@ -90,11 +91,13 @@ func min(a, b int) int {
 // Handle a query and serve the results.
 func queryHandler(w http.ResponseWriter, r *http.Request) {
 	query := r.FormValue("q")
-	ids, err := FindScrolls(query)
+	results, err := FindScrolls(query)
 	if err != nil {
 		panic(err)
 	}
-	data := result{Query: query, NumMatches: len(ids), Matches: ids[:min(20, len(ids))]}
+	numMatches := len(results.Ids)
+	data := result{Query: query, NumMatches: numMatches, Matches: results.Ids[:min(20, numMatches)],
+		TotalMatches: results.Total}
 	renderTemplate(w, "search", data)
 }
 

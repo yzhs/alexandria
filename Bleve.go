@@ -91,11 +91,11 @@ func openIndex() (bleve.Index, error) {
 }
 
 // Search the swish index for a given query.
-func searchBleve(queryString string) ([]Id, error) {
+func searchBleve(queryString string) (Results, error) {
 	index, err := openIndex()
 	if err != nil {
 		LogError(err)
-		return nil, err
+		return Results{}, err
 	}
 	defer index.Close()
 
@@ -105,26 +105,26 @@ func searchBleve(queryString string) ([]Id, error) {
 	searchResults, err := index.Search(search)
 	if err != nil {
 		LogError(err)
-		return nil, err
+		return Results{}, err
 	}
 
-	results := make([]Id, Config.MaxResults)
+	ids := make([]Id, Config.MaxResults)
 	for i, match := range searchResults.Hits {
-		results[i] = Id(match.ID)
+		ids[i] = Id(match.ID)
 	}
 
-	return results[:len(searchResults.Hits)], nil
+	return Results{ids[:len(searchResults.Hits)], int(searchResults.Total)}, nil
 }
 
 // Get a list of scrolls matching the query.
-func FindScrolls(query string) ([]Id, error) {
-	ids, err := searchBleve(query)
+func FindScrolls(query string) (Results, error) {
+	results, err := searchBleve(query)
 	if err != nil {
-		return nil, err
+		return Results{}, err
 	}
-	ProcessScrolls(ids)
+	ProcessScrolls(results.Ids)
 
-	return ids, nil
+	return results, nil
 }
 
 func ComputeStatistics() Statistics {

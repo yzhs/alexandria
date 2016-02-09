@@ -62,12 +62,12 @@ func main() {
 	case version:
 		fmt.Println(NAME, VERSION)
 	default:
-		ids, err := FindScrolls(strings.Join(os.Args[1:], " "))
+		results, err := FindScrolls(strings.Join(os.Args[1:], " "))
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf("There are %d matching scrolls.\n", len(ids))
-		for _, id := range ids {
+		fmt.Printf("There are %d matching scrolls.\n", len(results.Ids))
+		for _, id := range results.Ids {
 			fmt.Println("file://" + Config.CacheDirectory + string(id) + ".png")
 		}
 	}
