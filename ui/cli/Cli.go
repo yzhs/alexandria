@@ -44,6 +44,7 @@ func main() {
 	flag.Parse()
 
 	InitConfig()
+	Config.MaxResults = 1e9
 
 	if profile {
 		f, err := os.Create("alexandria.prof")
