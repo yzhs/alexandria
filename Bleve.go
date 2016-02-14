@@ -99,18 +99,33 @@ func searchBleve(queryString string) (Results, error) {
 	}
 	defer index.Close()
 
-	query := bleve.NewQueryStringQuery(queryString)
+	newQueryString := ""
+	for _, tmp := range strings.Split(queryString, " ") {
+		word := strings.TrimSpace(tmp)
+		if word[0] == '-' || word[0] == '+' {
+			newQueryString += " " + word
+		} else if word[0] == '~' {
+			// Remove prefix to make term optional
+			newQueryString += " " + word[1:]
+		} else {
+			newQueryString += " +" + word
+		}
+		println(newQueryString[1:])
+	}
+
+	query := bleve.NewQueryStringQuery(newQueryString[1:]) // Remove leading space
 	search := bleve.NewSearchRequest(query)
 	search.Size = Config.MaxResults
 	searchResults, err := index.Search(search)
 	if err != nil {
+		println("Invalid query string: '" + newQueryString[1:] + "'")
 		LogError(err)
 		return Results{}, err
 	}
 
-	ids := make([]Id, Config.MaxResults)
-	for i, match := range searchResults.Hits {
-		ids[i] = Id(match.ID)
+	var ids []Id
+	for _, match := range searchResults.Hits {
+		ids = append(ids, Id(match.ID))
 	}
 
 	return Results{ids[:len(searchResults.Hits)], int(searchResults.Total)}, nil
