@@ -63,7 +63,11 @@ func main() {
 	case version:
 		fmt.Println(NAME, VERSION)
 	default:
-		results, err := FindScrolls(strings.Join(os.Args[1:], " "))
+		i := 1
+		if os.Args[1] == "--" {
+			i += 1
+		}
+		results, err := FindScrolls(strings.Join(os.Args[i:], " "))
 		if err != nil {
 			panic(err)
 		}
