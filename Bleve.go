@@ -33,6 +33,7 @@ func touch(file string) error {
 
 // Run index++ to generate a (new) swish++ index file.
 func GenerateIndex() error {
+	newIndex := false
 	// Try to open an existing index or create a new one if none exists.
 	index, err := openIndex()
 	if err != nil {
@@ -41,6 +42,7 @@ func GenerateIndex() error {
 		if err != nil {
 			return err
 		}
+		newIndex = true
 	}
 	defer index.Close()
 
@@ -67,7 +69,7 @@ func GenerateIndex() error {
 			continue
 		}
 		id := strings.TrimSuffix(file.Name(), ".tex")
-		if modTime < indexUpdateTime {
+		if modTime < indexUpdateTime && !newIndex {
 			continue
 		}
 
