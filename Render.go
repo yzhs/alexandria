@@ -18,10 +18,14 @@
 package alexandria
 
 import (
+	"errors"
 	"log"
+	"os"
 	"os/exec"
 	"strconv"
 )
+
+var NoSuchScrollError = errors.New("No such scroll")
 
 type errTemplateReader struct {
 	doc string
@@ -45,7 +49,11 @@ func scrollToLatex(id Id) error {
 
 	scroll, err := readScroll(id)
 	if err != nil {
-		log.Fatal(err)
+		if os.IsNotExist(err) {
+			RemoveFromIndex(id)
+			return NoSuchScrollError
+		}
+		LogError(err)
 		return err
 	}
 	tags := ParseMetadata(scroll)
@@ -106,11 +114,19 @@ func ProcessScroll(id Id) error {
 }
 
 // Generate images for a list of scrolls.
-func ProcessScrolls(ids []Id) {
+func ProcessScrolls(ids []Id) int {
+	numScrolls := 0
+
 	for _, id := range ids {
 		err := ProcessScroll(id)
-		if err != nil {
+		if err == NoSuchScrollError {
+			continue
+		} else if err != nil {
 			log.Panic("An error ocurred when processing scroll ", id, ": ", err)
+		} else {
+			numScrolls += 1
 		}
 	}
+
+	return numScrolls
 }

@@ -85,6 +85,15 @@ func GenerateIndex() error {
 	return nil
 }
 
+func RemoveFromIndex(id Id) error {
+	index, err := openIndex()
+	if err != nil {
+		return err
+	}
+	defer index.Close()
+	return index.Delete(string(id))
+}
+
 // Open the bleve index
 func openIndex() (bleve.Index, error) {
 	return bleve.Open(Config.AlexandriaDirectory + "bleve")
@@ -136,7 +145,17 @@ func FindScrolls(query string) (Results, error) {
 	if err != nil {
 		return Results{}, err
 	}
-	ProcessScrolls(results.Ids)
+	n := ProcessScrolls(results.Ids)
+	ids := make([]Id, n)
+	i := 0
+	for _, id := range results.Ids {
+		if _, err := os.Stat(Config.KnowledgeDirectory + string(id) + ".tex"); os.IsNotExist(err) {
+			continue
+		}
+		ids[i] = id
+		i += 1
+	}
+	results.Total = n // The number of hits can be wrong if scrolls have been deleted
 
 	return results, nil
 }
