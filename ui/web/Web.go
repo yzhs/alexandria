@@ -91,6 +91,10 @@ func min(a, b int) int {
 // Handle a query and serve the results.
 func queryHandler(w http.ResponseWriter, r *http.Request) {
 	query := r.FormValue("q")
+	if query == "" {
+		mainHandler(w, r)
+		return
+	}
 	results, err := FindScrolls(query)
 	if err != nil {
 		panic(err)
