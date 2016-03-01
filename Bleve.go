@@ -38,6 +38,7 @@ func GenerateIndex() error {
 	index, err := openIndex()
 	if err != nil {
 		mapping := bleve.NewIndexMapping()
+		mapping.DefaultAnalyzer = "en"
 		index, err = bleve.New(Config.AlexandriaDirectory+"bleve", mapping)
 		if err != nil {
 			return err
