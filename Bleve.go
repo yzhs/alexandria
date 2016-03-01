@@ -110,7 +110,6 @@ func searchBleve(queryString string) (Results, error) {
 		} else {
 			newQueryString += " +" + word
 		}
-		println(newQueryString[1:])
 	}
 
 	query := bleve.NewQueryStringQuery(newQueryString[1:]) // Remove leading space
