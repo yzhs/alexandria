@@ -27,7 +27,7 @@ import (
 
 	flag "github.com/ogier/pflag"
 
-	. "github.com/yzhs/alexandria-go"
+	. "github.com/yzhs/alexandria"
 )
 
 // Generate a HTML file describing the size of the library.

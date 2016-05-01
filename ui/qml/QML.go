@@ -25,8 +25,8 @@ import (
 
 	flag "github.com/ogier/pflag"
 
-	. "github.com/yzhs/alexandria-go"
-	render "github.com/yzhs/alexandria-go/render/xelatex"
+	. "github.com/yzhs/alexandria"
+	render "github.com/yzhs/alexandria/render/xelatex"
 
 	"gopkg.in/qml.v1"
 )

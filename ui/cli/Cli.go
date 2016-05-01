@@ -25,7 +25,7 @@ import (
 
 	flag "github.com/ogier/pflag"
 
-	. "github.com/yzhs/alexandria-go"
+	. "github.com/yzhs/alexandria"
 )
 
 func printStats() {
