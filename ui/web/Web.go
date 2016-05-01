@@ -67,7 +67,7 @@ func loadHtmlTemplate(name string) ([]byte, error) {
 
 type result struct {
 	Query        string
-	Matches      []Id
+	Matches      []Scroll
 	NumMatches   int
 	TotalMatches int
 }

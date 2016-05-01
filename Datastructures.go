@@ -83,7 +83,7 @@ type Scroll struct {
 }
 
 type Results struct {
-	Ids   []Id
+	Ids   []Scroll
 	Total int
 }
 

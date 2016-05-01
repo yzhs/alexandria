@@ -73,7 +73,7 @@ func main() {
 		}
 		fmt.Printf("There are %d matching scrolls.\n", len(results.Ids))
 		for _, id := range results.Ids {
-			fmt.Println("file://" + Config.CacheDirectory + string(id) + ".png")
+			fmt.Println("file://" + Config.CacheDirectory + string(id.Id) + ".png")
 		}
 	}
 }

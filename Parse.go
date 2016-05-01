@@ -104,3 +104,15 @@ func ParseMetadata(doc string) Metadata {
 
 	return Metadata{scroll_type, source, tags}
 }
+
+func StripComments(doc string) string {
+	var content string
+	for _, line_ := range strings.Split(doc, "\n\n") {
+		line := strings.TrimSpace(line_)
+		if len(line) > 0 && line[0] == '%' {
+			continue
+		}
+		content += line + "\n"
+	}
+	return strings.TrimSpace(content)
+}

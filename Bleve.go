@@ -134,9 +134,14 @@ func searchBleve(queryString string) (Results, error) {
 		return Results{}, err
 	}
 
-	var ids []Id
+	var ids []Scroll
 	for _, match := range searchResults.Hits {
-		ids = append(ids, Id(match.ID))
+		id := Id(match.ID)
+		content, err := readScroll(id)
+		TryLogError(err)
+		metadata := ParseMetadata(content)
+		scroll := Scroll{Id: id, Content: StripComments(content), Metadata: metadata}
+		ids = append(ids, scroll)
 	}
 
 	return Results{ids[:len(searchResults.Hits)], int(searchResults.Total)}, nil
@@ -149,13 +154,13 @@ func FindScrolls(query string) (Results, error) {
 		return Results{}, err
 	}
 	n := ProcessScrolls(results.Ids)
-	ids := make([]Id, n)
+	ids := make([]Scroll, n)
 	i := 0
 	for _, id := range results.Ids {
-		if _, err := os.Stat(Config.KnowledgeDirectory + string(id) + ".tex"); os.IsNotExist(err) {
+		if _, err := os.Stat(Config.KnowledgeDirectory + string(id.Id) + ".tex"); os.IsNotExist(err) {
 			continue
 		}
-		ids[i] = id
+		ids[i] = Scroll{Id: id.Id}
 		i += 1
 	}
 	results.Total = n // The number of hits can be wrong if scrolls have been deleted

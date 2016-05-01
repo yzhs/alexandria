@@ -114,10 +114,11 @@ func ProcessScroll(id Id) error {
 }
 
 // Generate images for a list of scrolls.
-func ProcessScrolls(ids []Id) int {
+func ProcessScrolls(ids []Scroll) int {
 	numScrolls := 0
 
-	for _, id := range ids {
+	for _, foo := range ids {
+		id := foo.Id
 		err := ProcessScroll(id)
 		if err == NoSuchScrollError {
 			continue
