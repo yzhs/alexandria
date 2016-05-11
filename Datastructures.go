@@ -71,11 +71,11 @@ type Configuration struct {
 
 // The metadata contained in a scroll
 type Metadata struct {
-	Type       string
-	Source     []string
-	Tags       []string
-	Hidden     []string
-	OtherLines []string
+	Type        string
+	SourceLines []string
+	Tags        []string
+	Hidden      []string
+	OtherLines  []string
 }
 
 type Scroll struct {

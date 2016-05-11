@@ -111,7 +111,8 @@ func ParseMetadata(doc string) Metadata {
 		}
 	}
 
-	return Metadata{scroll_type, source, tags, hidden, other_lines}
+	return Metadata{Type: scroll_type, SourceLines: source, Tags: tags,
+		Hidden: hidden, OtherLines: other_lines}
 }
 
 func StripComments(doc string) string {
