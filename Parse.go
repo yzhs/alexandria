@@ -18,7 +18,6 @@
 package alexandria
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -73,7 +72,7 @@ func parseTags(line string) []string {
 //
 //	% @source Author: Title
 //	% @source Lemma 3.2, p. 41
-//	% @type proposition
+//	% @type proposition, definition
 //	% counter-example, analysis, TopOloGY, Weierstraß
 //
 // In this example, the scroll contains a proposition and is tagged with
@@ -92,10 +91,12 @@ func ParseMetadata(doc string) Metadata {
 			source = append(source, strings.TrimSpace(strings.TrimPrefix(line, "@source ")))
 		case strings.HasPrefix(line, "@type "):
 			tmp := strings.TrimSpace(strings.TrimPrefix(line, "@type "))
-			if scroll_type != "" {
-				panic(fmt.Sprintf("Scroll has two different types: %s and %s", scroll_type, tmp))
-			} else {
-				scroll_type = tmp
+			for _, type_ := range strings.Split(tmp, ",") {
+				// Ignore all but the first type, the other ones are just for searching
+				if scroll_type == "" {
+					scroll_type = strings.TrimSpace(type_)
+					break
+				}
 			}
 		default:
 			tags = append(tags, parseTags(line)...)
