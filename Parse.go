@@ -82,11 +82,15 @@ func parseTags(line string) []string {
 func ParseMetadata(doc string) Metadata {
 	// TODO Handle different types of tags: @source, @doctype, @keywords, and normal tags.
 	var source []string
+	var hidden []string
 	var scroll_type string
 	var tags []string
+	var other_lines []string
 
 	for _, line := range findMetadataLines(doc) {
 		switch {
+		case strings.HasPrefix(line, "@hidden "):
+			hidden = append(hidden, parseTags(strings.TrimPrefix(line, "@hidden "))...)
 		case strings.HasPrefix(line, "@source "):
 			source = append(source, strings.TrimSpace(strings.TrimPrefix(line, "@source ")))
 		case strings.HasPrefix(line, "@type "):
@@ -98,12 +102,16 @@ func ParseMetadata(doc string) Metadata {
 					break
 				}
 			}
+		case strings.HasPrefix(line, "@"):
+			// Do not strip the @[a-zA-Z0-9\-]** prefix, otherwise
+			// there is no way to tell what the line signifies.
+			other_lines = append(other_lines, line)
 		default:
 			tags = append(tags, parseTags(line)...)
 		}
 	}
 
-	return Metadata{scroll_type, source, tags}
+	return Metadata{scroll_type, source, tags, hidden, other_lines}
 }
 
 func StripComments(doc string) string {
