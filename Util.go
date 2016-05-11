@@ -27,6 +27,7 @@ func LogError(err interface{}) {
 	fmt.Fprintln(os.Stderr, err)
 }
 
+// If an error occurred, log it.
 func TryLogError(err interface{}) {
 	if err != nil {
 		LogError(err)

@@ -32,6 +32,7 @@ type errTemplateReader struct {
 	err error
 }
 
+// Load a template file from disk and propagate errors
 func (e *errTemplateReader) readTemplate(name string) {
 	if e.err != nil {
 		return

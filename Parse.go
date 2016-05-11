@@ -96,7 +96,8 @@ func ParseMetadata(doc string) Metadata {
 		case strings.HasPrefix(line, "@type "):
 			tmp := strings.TrimSpace(strings.TrimPrefix(line, "@type "))
 			for _, type_ := range strings.Split(tmp, ",") {
-				// Ignore all but the first type, the other ones are just for searching
+				// Ignore all but the first type, the other
+				// ones are just for searching
 				if scroll_type == "" {
 					scroll_type = strings.TrimSpace(type_)
 					break
@@ -115,6 +116,8 @@ func ParseMetadata(doc string) Metadata {
 		Hidden: hidden, OtherLines: other_lines}
 }
 
+// Remove all lines that only contain a LaTeX comment.  This removes all the
+// medatata from a scroll.
 func StripComments(doc string) string {
 	var content string
 	for _, line_ := range strings.Split(doc, "\n\n") {

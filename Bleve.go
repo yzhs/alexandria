@@ -33,6 +33,7 @@ func touch(file string) error {
 
 // Run index++ to generate a (new) swish++ index file.
 func GenerateIndex() error {
+	// TODO handle multiple fields, i.e. the main text, @source, @type, tags, etc.
 	newIndex := false
 	// Try to open an existing index or create a new one if none exists.
 	index, err := openIndex()
