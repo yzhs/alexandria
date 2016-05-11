@@ -64,8 +64,13 @@ func main() {
 		fmt.Println(NAME, VERSION)
 	default:
 		i := 1
-		if os.Args[1] == "--" {
-			i += 1
+		if len(os.Args) > 0 {
+			if os.Args[1] == "--" {
+				i += 1
+			} else if os.Args[1] == "all" {
+				RenderAllScrolls()
+				os.Exit(0)
+			}
 		}
 		results, err := FindScrolls(strings.Join(os.Args[i:], " "))
 		if err != nil {

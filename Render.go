@@ -19,10 +19,12 @@ package alexandria
 
 import (
 	"errors"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
 	"strconv"
+	"strings"
 )
 
 var NoSuchScrollError = errors.New("No such scroll")
@@ -131,4 +133,18 @@ func ProcessScrolls(ids []Scroll) int {
 	}
 
 	return numScrolls
+}
+
+func RenderAllScrolls() error {
+	files, err := ioutil.ReadDir(Config.KnowledgeDirectory)
+	if err != nil {
+		return err
+	}
+	for _, file := range files {
+		id := Id(strings.TrimSuffix(file.Name(), ".tex"))
+		if err := ProcessScroll(id); err != nil {
+			return err
+		}
+	}
+	return nil
 }
