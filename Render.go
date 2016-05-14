@@ -144,6 +144,9 @@ func RenderAllScrolls() int {
 	counter := 0
 	var errors []error
 	for _, file := range files {
+		if !strings.HasSuffix(file.Name(), ".tex") {
+			continue
+		}
 		id := Id(strings.TrimSuffix(file.Name(), ".tex"))
 		if err := ProcessScroll(id); err != nil && err != NoSuchScrollError {
 			log.Printf("%s\nERROR\n%s\n%v\n%s\n", hashes, hashes, err, hashes)
