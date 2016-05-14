@@ -28,6 +28,7 @@ import (
 )
 
 var NoSuchScrollError = errors.New("No such scroll")
+const hashes = "############################################################"
 
 type errTemplateReader struct {
 	doc string
@@ -135,16 +136,22 @@ func ProcessScrolls(ids []Scroll) int {
 	return numScrolls
 }
 
-func RenderAllScrolls() error {
+func RenderAllScrolls() int {
 	files, err := ioutil.ReadDir(Config.KnowledgeDirectory)
 	if err != nil {
-		return err
+		panic(err)
 	}
+	counter := 0
+	var errors []error
 	for _, file := range files {
 		id := Id(strings.TrimSuffix(file.Name(), ".tex"))
-		if err := ProcessScroll(id); err != nil {
-			return err
+		if err := ProcessScroll(id); err != nil && err != NoSuchScrollError {
+			log.Printf("%s\nERROR\n%s\n%v\n%s\n", hashes, hashes, err, hashes)
 		}
+		counter += 1
 	}
-	return nil
+	for _, err := range errors {
+		log.Printf("Error: %v\n", err)
+	}
+	return counter
 }
