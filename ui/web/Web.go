@@ -139,6 +139,6 @@ func main() {
 	http.HandleFunc("/search", queryHandler)
 	http.HandleFunc("/alexandria.edit", editHandler)
 	serveDirectory("/images/", Config.CacheDirectory)
-	serveDirectory("/styles/", Config.TemplateDirectory+"styles")
+	serveDirectory("/static/", Config.TemplateDirectory+"static")
 	http.ListenAndServe("127.0.0.1:41665", nil)
 }

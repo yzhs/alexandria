@@ -141,17 +141,30 @@ func RenderAllScrolls() int {
 	if err != nil {
 		panic(err)
 	}
-	counter := 0
 	var errors []error
+	limitGoroutines := make(chan bool, Config.MaxProcs)
+	for i := 0; i < Config.MaxProcs; i++ {
+		limitGoroutines <- true
+	}
+	ch := make(chan int, len(files))
 	for _, file := range files {
-		if !strings.HasSuffix(file.Name(), ".tex") {
-			continue
-		}
-		id := Id(strings.TrimSuffix(file.Name(), ".tex"))
-		if err := ProcessScroll(id); err != nil && err != NoSuchScrollError {
-			log.Printf("%s\nERROR\n%s\n%v\n%s\n", hashes, hashes, err, hashes)
-		}
-		counter += 1
+		go func (file os.FileInfo) {
+			<-limitGoroutines
+			if !strings.HasSuffix(file.Name(), ".tex") {
+				ch <- 0
+				return
+			}
+			id := Id(strings.TrimSuffix(file.Name(), ".tex"))
+			if err := ProcessScroll(id); err != nil && err != NoSuchScrollError {
+				log.Printf("%s\nERROR\n%s\n%v\n%s\n", hashes, hashes, err, hashes)
+			}
+			ch <- 1
+		} (file);
+	}
+	counter := 0
+	for i := 0; i < len(files); i++ {
+		counter += <-ch
+		limitGoroutines <- true
 	}
 	for _, err := range errors {
 		log.Printf("Error: %v\n", err)
