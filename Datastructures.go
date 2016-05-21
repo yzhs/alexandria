@@ -62,6 +62,9 @@ type Configuration struct {
 	Quality    int
 	// The resolution of the generated PNG files
 	Dpi        int
+	// How many processes may run in parallel when rendering
+	MaxProcs   int
+
 	// How many results are to be processed at once
 	MaxResults int
 
@@ -98,6 +101,7 @@ func InitConfig() {
 	Config.Quality = 90
 	Config.Dpi = 137
 	Config.MaxResults = 1000
+	Config.MaxProcs = 4
 
 	dir := os.Getenv("HOME") + "/.alexandria/"
 
