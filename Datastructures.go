@@ -58,8 +58,11 @@ type Statistics interface {
 
 // Configuration data of Alexandria
 type Configuration struct {
+	// The setting passed to ImageMagick when generating the PNG files
 	Quality    int
+	// The resolution of the generated PNG files
 	Dpi        int
+	// How many results are to be processed at once
 	MaxResults int
 
 	AlexandriaDirectory string
