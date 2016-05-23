@@ -57,7 +57,7 @@ func findMetadataLines(doc string) []string {
 func parseTags(line string) []string {
 	var tags []string
 	for _, tag := range strings.Split(line, ",") {
-		tmp := strings.ToLower(strings.TrimSpace(tag))
+		tmp := strings.TrimSpace(tag)
 		if tmp != "" {
 			tags = append(tags, tmp)
 		}
