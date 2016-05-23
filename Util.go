@@ -84,18 +84,18 @@ var templatesModTime int64 = -1
 // All recognized template files
 // TODO Generate the list⁈
 var templateFiles []string = []string{
-	"footer.tex", "header.tex",
-	"algorithm_footer.tex", "algorithm_header.tex",
-	"axiom_footer.tex", "axiom_header.tex",
-	"corollary_footer.tex", "corollary_header.tex",
-	"definition_footer.tex", "definition_header.tex",
-	"example_footer.tex", "example_header.tex",
-	"exercise_footer.tex", "exercise_header.tex",
-	"lemma_footer.tex", "lemma_header.tex",
-	"proposition_footer.tex", "proposition_header.tex",
-	"proof_footer.tex", "proof_header.tex",
+	"header.tex", "footer.tex",
+	"algorithm_header.tex", "algorithm_footer.tex",
+	"axiom_header.tex", "axiom_footer.tex",
+	"corollary_header.tex", "corollary_footer.tex",
+	"definition_header.tex", "definition_footer.tex",
+	"example_header.tex", "example_footer.tex",
+	"exercise_header.tex", "exercise_footer.tex",
+	"lemma_header.tex", "lemma_footer.tex",
+	"proof_header.tex", "proof_footer.tex",
+	"proposition_header.tex", "proposition_footer.tex",
 	"remark_header.tex", "remark_footer.tex",
-	"theorem_footer.tex", "theorem_header.tex"}
+	"theorem_header.tex", "theorem_footer.tex"}
 
 // Check whether a given scroll has to be recompiled
 func isUpToDate(id Id) bool {
