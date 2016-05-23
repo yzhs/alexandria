@@ -79,8 +79,7 @@ func GenerateIndex() error {
 		contentBytes, err := ioutil.ReadFile(Config.KnowledgeDirectory + file.Name())
 		TryLogError(err)
 		content := string(contentBytes)
-		metadata := ParseMetadata(content)
-		scroll := Scroll{metadata, Id(id), content}
+		scroll := Parse(id, content)
 
 		batch.Index(id, scroll)
 	}
@@ -140,8 +139,7 @@ func searchBleve(queryString string) (Results, error) {
 		id := Id(match.ID)
 		content, err := readScroll(id)
 		TryLogError(err)
-		metadata := ParseMetadata(content)
-		scroll := Scroll{Id: id, Content: StripComments(content), Metadata: metadata}
+		scroll := Parse(string(id), content)
 		ids = append(ids, scroll)
 	}
 

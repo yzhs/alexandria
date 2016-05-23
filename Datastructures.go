@@ -75,19 +75,14 @@ type Configuration struct {
 	TempDirectory       string
 }
 
-// The metadata contained in a scroll
-type Metadata struct {
-	Type        string
-	SourceLines []string
-	Tags        []string
-	Hidden      []string
-	OtherLines  []string
-}
-
 type Scroll struct {
-	Metadata
-	Id      Id
-	Content string
+	Id          Id       `json:"id"`
+	Content     string   `json:"content"`
+	Type        string   `json:"type"`
+	SourceLines []string `json:"source"`
+	Tags        []string `json:"tag"`
+	Hidden      []string `json:"hidden"`
+	OtherLines  []string `json:"other"`
 }
 
 type Results struct {

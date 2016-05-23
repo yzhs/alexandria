@@ -22,8 +22,8 @@ import (
 )
 
 // Figure out what type of a document we have
-func DocumentType(m Metadata) string {
-	return m.Type
+func (s *Scroll) DocumentType() string {
+	return s.Type
 }
 
 // Return the lines of the last LaTeX comment block without the leading %.  In
@@ -79,7 +79,7 @@ func parseTags(line string) []string {
 // 'counter-example', 'analysis', 'topology' and 'weierstraß'.  It can be found
 // in Author: Title as Lemma 3.2 on pase 41.  All the metadata is stored in the
 // final block of LaTeX comments.  Also, we simply ignore any empty lines.
-func ParseMetadata(doc string) Metadata {
+func Parse(id, doc string) Scroll {
 	// TODO Handle different types of tags: @source, @doctype, @keywords, and normal tags.
 	var source []string
 	var hidden []string
@@ -111,14 +111,16 @@ func ParseMetadata(doc string) Metadata {
 			tags = append(tags, parseTags(line)...)
 		}
 	}
+	content := stripComments(doc)
 
-	return Metadata{Type: scroll_type, SourceLines: source, Tags: tags,
-		Hidden: hidden, OtherLines: other_lines}
+	return Scroll{Id: Id(id), Content: content, Type: scroll_type,
+		SourceLines: source, Tags: tags, Hidden: hidden,
+		OtherLines: other_lines}
 }
 
 // Remove all lines that only contain a LaTeX comment.  This removes all the
 // medatata from a scroll.
-func StripComments(doc string) string {
+func stripComments(doc string) string {
 	var content string
 	for _, line_ := range strings.Split(doc, "\n\n") {
 		line := strings.TrimSpace(line_)

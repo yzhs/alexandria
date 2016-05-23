@@ -51,7 +51,7 @@ func (e *errTemplateReader) readTemplate(name string) {
 func scrollToLatex(id Id) error {
 	var e errTemplateReader
 
-	scroll, err := readScroll(id)
+	scrollText, err := readScroll(id)
 	if err != nil {
 		if os.IsNotExist(err) {
 			RemoveFromIndex(id)
@@ -60,12 +60,12 @@ func scrollToLatex(id Id) error {
 		LogError(err)
 		return err
 	}
-	tags := ParseMetadata(scroll)
+	scroll := Parse(string(id), scrollText)
 
 	e.readTemplate("header")
-	e.readTemplate(DocumentType(tags) + "_header")
-	e.doc += scroll
-	e.readTemplate(DocumentType(tags) + "_footer")
+	e.readTemplate(scroll.DocumentType() + "_header")
+	e.doc += scroll.Content
+	e.readTemplate(scroll.DocumentType() + "_footer")
 	e.readTemplate("footer")
 
 	if e.err != nil {
