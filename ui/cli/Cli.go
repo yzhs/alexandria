@@ -68,7 +68,7 @@ func main() {
 			if os.Args[1] == "--" {
 				i += 1
 			} else if os.Args[1] == "all" {
-				fmt.Printf("Rendered all %d scrolls.\n", RenderAllScrolls());
+				fmt.Printf("Rendered all %d scrolls.\n", RenderAllScrolls())
 				os.Exit(0)
 			}
 		}

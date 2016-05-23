@@ -59,11 +59,11 @@ type Statistics interface {
 // Configuration data of Alexandria
 type Configuration struct {
 	// The setting passed to ImageMagick when generating the PNG files
-	Quality    int
+	Quality int
 	// The resolution of the generated PNG files
-	Dpi        int
+	Dpi int
 	// How many processes may run in parallel when rendering
-	MaxProcs   int
+	MaxProcs int
 
 	// How many results are to be processed at once
 	MaxResults int
@@ -86,7 +86,8 @@ type Scroll struct {
 }
 
 type Results struct {
-	Ids   []Scroll
+	Ids []Scroll
+	// How many results there were all in all; can be significantly larger than len(Ids).
 	Total int
 }
 

@@ -28,6 +28,7 @@ import (
 )
 
 var NoSuchScrollError = errors.New("No such scroll")
+
 const hashes = "############################################################"
 
 type errTemplateReader struct {
@@ -148,7 +149,7 @@ func RenderAllScrolls() int {
 	}
 	ch := make(chan int, len(files))
 	for _, file := range files {
-		go func (file os.FileInfo) {
+		go func(file os.FileInfo) {
 			<-limitGoroutines
 			if !strings.HasSuffix(file.Name(), ".tex") {
 				ch <- 0
@@ -159,7 +160,7 @@ func RenderAllScrolls() int {
 				log.Printf("%s\nERROR\n%s\n%v\n%s\n", hashes, hashes, err, hashes)
 			}
 			ch <- 1
-		} (file);
+		}(file)
 	}
 	counter := 0
 	for i := 0; i < len(files); i++ {

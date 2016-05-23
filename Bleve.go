@@ -59,7 +59,6 @@ func GenerateIndex() error {
 		scrollMapping.AddFieldMappingsAt("hidden", simpleMapping)
 		scrollMapping.AddFieldMappingsAt("other", simpleMapping)
 
-
 		mapping := bleve.NewIndexMapping()
 		mapping.DefaultAnalyzer = "en"
 		mapping.DefaultMapping = scrollMapping
