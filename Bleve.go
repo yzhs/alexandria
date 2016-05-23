@@ -24,6 +24,9 @@ import (
 	"time"
 
 	"github.com/blevesearch/bleve"
+
+	"github.com/blevesearch/bleve/analysis/analyzers/keyword_analyzer"
+	"github.com/blevesearch/bleve/analysis/analyzers/simple_analyzer"
 )
 
 func touch(file string) error {
@@ -38,11 +41,32 @@ func GenerateIndex() error {
 	// Try to open an existing index or create a new one if none exists.
 	index, err := openIndex()
 	if err != nil {
+		enTextMapping := bleve.NewTextFieldMapping()
+		enTextMapping.Analyzer = "en"
+
+		simpleMapping := bleve.NewTextFieldMapping()
+		simpleMapping.Analyzer = simple_analyzer.Name
+
+		typeMapping := bleve.NewTextFieldMapping()
+		typeMapping.Analyzer = keyword_analyzer.Name
+
+		scrollMapping := bleve.NewDocumentMapping()
+		scrollMapping.AddFieldMappingsAt("id", simpleMapping)
+		scrollMapping.AddFieldMappingsAt("content", enTextMapping)
+		scrollMapping.AddFieldMappingsAt("type", typeMapping)
+		scrollMapping.AddFieldMappingsAt("source", simpleMapping)
+		scrollMapping.AddFieldMappingsAt("tag", simpleMapping)
+		scrollMapping.AddFieldMappingsAt("hidden", simpleMapping)
+		scrollMapping.AddFieldMappingsAt("other", simpleMapping)
+
+
 		mapping := bleve.NewIndexMapping()
 		mapping.DefaultAnalyzer = "en"
+		mapping.DefaultMapping = scrollMapping
+
 		index, err = bleve.New(Config.AlexandriaDirectory+"bleve", mapping)
 		if err != nil {
-			return err
+			panic(err)
 		}
 		newIndex = true
 	}
