@@ -54,10 +54,10 @@ func GenerateIndex() error {
 		scrollMapping.AddFieldMappingsAt("id", simpleMapping)
 		scrollMapping.AddFieldMappingsAt("content", enTextMapping)
 		scrollMapping.AddFieldMappingsAt("type", typeMapping)
-		scrollMapping.AddFieldMappingsAt("source", simpleMapping)
-		scrollMapping.AddFieldMappingsAt("tag", simpleMapping)
-		scrollMapping.AddFieldMappingsAt("hidden", simpleMapping)
-		scrollMapping.AddFieldMappingsAt("other", simpleMapping)
+		scrollMapping.AddFieldMappingsAt("source", enTextMapping)
+		scrollMapping.AddFieldMappingsAt("tag", enTextMapping)
+		scrollMapping.AddFieldMappingsAt("hidden", enTextMapping)
+		scrollMapping.AddFieldMappingsAt("other", enTextMapping)
 
 		mapping := bleve.NewIndexMapping()
 		mapping.DefaultAnalyzer = "en"
