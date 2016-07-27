@@ -127,7 +127,7 @@ func stripComments(doc string) string {
 		if len(line) > 0 && line[0] == '%' {
 			continue
 		}
-		content += line + "\n"
+		content += line + "\n\n"
 	}
 	return strings.TrimSpace(content)
 }
