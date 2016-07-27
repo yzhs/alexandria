@@ -95,7 +95,7 @@ var Config Configuration
 
 func InitConfig() {
 	Config.Quality = 90
-	Config.Dpi = 137
+	Config.Dpi = 160
 	Config.MaxResults = 1000
 	Config.MaxProcs = 4
 
