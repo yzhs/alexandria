@@ -25,8 +25,8 @@ import (
 
 	"github.com/blevesearch/bleve"
 
-	"github.com/blevesearch/bleve/analysis/analyzers/keyword_analyzer"
-	"github.com/blevesearch/bleve/analysis/analyzers/simple_analyzer"
+	"github.com/blevesearch/bleve/analysis/analyzer/keyword"
+	"github.com/blevesearch/bleve/analysis/analyzer/simple"
 )
 
 func touch(file string) error {
@@ -45,10 +45,10 @@ func GenerateIndex() error {
 		enTextMapping.Analyzer = "en"
 
 		simpleMapping := bleve.NewTextFieldMapping()
-		simpleMapping.Analyzer = simple_analyzer.Name
+		simpleMapping.Analyzer = simple.Name
 
 		typeMapping := bleve.NewTextFieldMapping()
-		typeMapping.Analyzer = keyword_analyzer.Name
+		typeMapping.Analyzer = keyword.Name
 
 		scrollMapping := bleve.NewDocumentMapping()
 		scrollMapping.AddFieldMappingsAt("id", simpleMapping)
