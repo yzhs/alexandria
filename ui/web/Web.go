@@ -78,7 +78,10 @@ func renderTemplate(w http.ResponseWriter, templateFile string, resultData resul
 		fmt.Fprintf(w, "Error: %v", err)
 		return
 	}
-	t.Execute(w, resultData)
+	err = t.Execute(w, resultData)
+	if err != nil {
+		fmt.Fprintf(w, "Error: %v", err)
+	}
 }
 
 func min(a, b int) int {
@@ -140,5 +143,8 @@ func main() {
 	http.HandleFunc("/alexandria.edit", editHandler)
 	serveDirectory("/images/", Config.CacheDirectory)
 	serveDirectory("/static/", Config.TemplateDirectory+"static")
-	http.ListenAndServe("127.0.0.1:41665", nil)
+	err := http.ListenAndServe("127.0.0.1:41665", nil)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v", err)
+	}
 }
