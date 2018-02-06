@@ -53,7 +53,7 @@ func editHandler(w http.ResponseWriter, r *http.Request) {
 
 // Serve the search page.
 func mainHandler(w http.ResponseWriter, r *http.Request) {
-	html, err := loadHtmlTemplate("main")
+	html, err := loadHTMLTemplate("main")
 	if err != nil {
 		fmt.Fprintf(w, "%v", err)
 		return
@@ -61,7 +61,7 @@ func mainHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, string(html))
 }
 
-func loadHtmlTemplate(name string) ([]byte, error) {
+func loadHTMLTemplate(name string) ([]byte, error) {
 	return ioutil.ReadFile(Config.TemplateDirectory + name + ".html")
 }
 
