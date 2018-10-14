@@ -42,7 +42,7 @@ func readScroll(id Id) (string, error) {
 
 // Load the content of a template file with the given name.
 func readTemplate(filename string) (string, error) {
-	result, err := ioutil.ReadFile(Config.TemplateDirectory + filename + ".tex")
+	result, err := ioutil.ReadFile(Config.TemplateDirectory + "tex/" + filename + ".tex")
 	return string(result), err
 }
 
