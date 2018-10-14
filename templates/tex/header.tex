@@ -1,0 +1,34 @@
+\documentclass[preview,border=1pt]{standalone}
+
+\usepackage{extarrows}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Import commonly used packages                                                %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% And a modern font.
+\usepackage{lmodern}
+
+% Make thin symbols to protrude into the right margin and other small
+% typographic enhancements.
+\usepackage[final,protrusion=true]{microtype}
+%\usepackage[final,tracking=smallcaps,expansion=alltext,protrusion=true]{microtype}
+% Spread text in small caps a little wider than normal.
+\SetTracking{encoding=*,shape=sc}{30}
+
+\usepackage[english]{common}
+
+% Typeset chemical formulas
+\usepackage{chemformula}
+
+
+% Allow easy inclusion of images in a scroll
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth#1{\ifdim\Gin@nat@width>#1 #1\else\Gin@nat@width\fi}
+\makeatother
+\newcommand*{\image}[1]{\includegraphics[width=\maxwidth{600px}]{\jobname-#1}}
+
+\renewcommand*{\labelenumi}{(\alph{enumi})}
+
+\begin{document}
