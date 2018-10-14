@@ -67,7 +67,7 @@ func mainHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func loadHTMLTemplate(name string) ([]byte, error) {
-	return ioutil.ReadFile(Config.TemplateDirectory + name + ".html")
+	return ioutil.ReadFile(Config.TemplateDirectory + "html/" + name + ".html")
 }
 
 type result struct {
@@ -78,7 +78,7 @@ type result struct {
 }
 
 func renderTemplate(w http.ResponseWriter, templateFile string, resultData result) {
-	t, err := template.ParseFiles(Config.TemplateDirectory + templateFile + ".html")
+	t, err := template.ParseFiles(Config.TemplateDirectory + "html/" + templateFile + ".html")
 	if err != nil {
 		fmt.Fprintf(w, "Error: %v", err)
 		return
