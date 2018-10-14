@@ -34,7 +34,6 @@ func touch(file string) error {
 	return os.Chtimes(file, now, now)
 }
 
-// Run index++ to generate a (new) swish++ index file.
 func GenerateIndex() error {
 	// TODO handle multiple fields, i.e. the main text, @source, @type, tags, etc.
 	newIndex := false
@@ -123,12 +122,10 @@ func RemoveFromIndex(id Id) error {
 	return index.Delete(string(id))
 }
 
-// Open the bleve index
 func openIndex() (bleve.Index, error) {
 	return bleve.Open(Config.AlexandriaDirectory + "bleve")
 }
 
-// Search the swish index for a given query.
 func searchBleve(queryString string) (Results, error) {
 	index, err := openIndex()
 	if err != nil {
