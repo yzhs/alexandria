@@ -53,3 +53,10 @@ You can interact with Alexandria in two different ways:
 Say you want to look up some definition from Hartshorne's *Algebraic Geometry*
 mentioning the Zariski topology.  You could search for `source:hartshorne
 tag:geometry type:definition zariski`.
+
+## Dependencies
+* `github.com/ogier/pflag` and `github.com/blevesearch/bleve`, which `go get
+  github.com/yzhs/alexandria` will install automatically,
+* `XeLaTeX` to create a PDF file from the LaTeX source, and
+* `imagemagick`, more to convert the PDF file to a PNG image that can be shown
+  in the browser.
