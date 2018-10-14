@@ -1,0 +1,16 @@
+input {
+	color: black;
+	background-color: white;
+}
+
+header, .id {
+	background-color: white;
+}
+
+.scroll {
+	border-left: 2px solid #aaf;
+}
+
+.metadata {
+	color: #555;
+}
