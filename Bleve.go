@@ -83,7 +83,10 @@ func GenerateIndex() error {
 		return nil
 	}
 	// Save the time of this indexing operation
-	_ = touch(Config.AlexandriaDirectory + "index_updated")
+	err = touch(Config.AlexandriaDirectory + "index_updated")
+	if err != nil {
+		LogError(err)
+	}
 
 	batch := index.NewBatch()
 	for _, file := range files {

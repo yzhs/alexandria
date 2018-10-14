@@ -55,7 +55,10 @@ func scrollToLatex(id Id) error {
 	scrollText, err := readScroll(id)
 	if err != nil {
 		if os.IsNotExist(err) {
-			RemoveFromIndex(id)
+			err = RemoveFromIndex(id)
+			if err != nil {
+				LogError(err)
+			}
 			return NoSuchScrollError
 		}
 		LogError(err)
