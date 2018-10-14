@@ -30,6 +30,11 @@ import (
 	. "github.com/yzhs/alexandria"
 )
 
+const (
+	LISTEN_ON   = "127.0.0.1:41665"
+	MAX_RESULTS = 100
+)
+
 // Generate a HTML file describing the size of the library.
 func printStats() string {
 	stats := ComputeStatistics()
@@ -119,7 +124,7 @@ func main() {
 	flag.Parse()
 
 	InitConfig()
-	Config.MaxResults = 100
+	Config.MaxResults = MAX_RESULTS
 
 	if profile {
 		f, err := os.Create("alexandria.prof")
@@ -143,7 +148,7 @@ func main() {
 	http.HandleFunc("/alexandria.edit", editHandler)
 	serveDirectory("/images/", Config.CacheDirectory)
 	serveDirectory("/static/", Config.TemplateDirectory+"static")
-	err := http.ListenAndServe("127.0.0.1:41665", nil)
+	err := http.ListenAndServe(LISTEN_ON, nil)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v", err)
 	}
