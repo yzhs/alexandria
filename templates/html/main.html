@@ -1,19 +1,18 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width">
-		<title>Alexandria</title>
-		<link rel="stylesheet" type="text/css" href="static/normalize.css"/>
-		<link rel="stylesheet" type="text/css" href="static/skeleton.css"/>
-		<link rel="stylesheet" type="text/css" href="static/light.css"/>
-	</head>
-	<body>
-		<div id="form">
-			<form action="search" method="get" accept-charset="utf-8">
-				<input type="search" name="q" id="query" placeholder="Enter search…" autofocus/>
-				<button type="submit" id="search" style="line-height: 39px;">Search</button>
-			</form>
-		</div>
-	</body>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width">
+	<title>Alexandria</title>
+	<link rel="stylesheet" type="text/css" href="static/main.css"/>
+</head>
+<body>
+	<header class="container-fluid">
+		<form class="input-group" action="search" method="get" accept-charset="utf-8">
+			<input type="search" name="q" id="query" class="form-control"
+				placeholder="Enter search…" autofocus/>
+			<button type="submit" id="search" class="btn btn-primary">Search</button>
+		</form>
+	</header>
+</body>
 </html>
