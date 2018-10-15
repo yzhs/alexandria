@@ -35,6 +35,17 @@ func printStats() {
 	fmt.Printf("The library contains %v scrolls with a total size of %.1f kiB.\n", n, size)
 }
 
+func renderMatchesForQuery(query string) {
+	results, err := alexandria.FindScrolls(query)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("There are %d matching scrolls.\n", len(results.Ids))
+	for _, id := range results.Ids {
+		fmt.Println("file://" + alexandria.Config.CacheDirectory + string(id.Id) + ".png")
+	}
+}
+
 func main() {
 	var index, profile, stats, version bool
 	flag.BoolVarP(&index, "index", "i", false, "\tUpdate the index")
@@ -62,24 +73,18 @@ func main() {
 		printStats()
 	case version:
 		fmt.Println(alexandria.NAME, alexandria.VERSION)
+	case len(os.Args) == 0:
+		println("Nothing to do")
+	case os.Args[1] == "all":
+		var x alexandria.XelatexImagemagickRenderer
+		fmt.Printf("Rendered all %d scrolls.\n", alexandria.RenderAllScrolls(x))
+		os.Exit(0)
+
 	default:
 		i := 1
-		if len(os.Args) > 0 {
-			if os.Args[1] == "--" {
-				i += 1
-			} else if os.Args[1] == "all" {
-				var x alexandria.XelatexImagemagickRenderer
-				fmt.Printf("Rendered all %d scrolls.\n", alexandria.RenderAllScrolls(x))
-				os.Exit(0)
-			}
+		if os.Args[1] == "--" {
+			i += 1
 		}
-		results, err := alexandria.FindScrolls(strings.Join(os.Args[i:], " "))
-		if err != nil {
-			panic(err)
-		}
-		fmt.Printf("There are %d matching scrolls.\n", len(results.Ids))
-		for _, id := range results.Ids {
-			fmt.Println("file://" + alexandria.Config.CacheDirectory + string(id.Id) + ".png")
-		}
+		renderMatchesForQuery(strings.Join(os.Args[i:], " "))
 	}
 }
