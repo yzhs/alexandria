@@ -175,7 +175,7 @@ func FindScrolls(query string) (Results, error) {
 	if err != nil {
 		return Results{}, err
 	}
-	n := ProcessScrolls(results.Ids)
+	n := RenderListOfScrolls(results.Ids)
 	ids := make([]Scroll, n)
 	i := 0
 	for _, id := range results.Ids {

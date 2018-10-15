@@ -103,7 +103,7 @@ func pdfToPng(i Id) error {
 }
 
 // Generate a PNG image from a given scroll, if there is no up-to-date image.
-func ProcessScroll(id Id) error {
+func renderScroll(id Id) error {
 	if isUpToDate(id) {
 		return nil
 	}
@@ -121,13 +121,12 @@ func ProcessScroll(id Id) error {
 	return pdfToPng(id)
 }
 
-// Generate images for a list of scrolls.
-func ProcessScrolls(ids []Scroll) int {
+func RenderListOfScrolls(ids []Scroll) int {
 	numScrolls := 0
 
 	for _, foo := range ids {
 		id := foo.Id
-		err := ProcessScroll(id)
+		err := renderScroll(id)
 		if err == NoSuchScrollError {
 			continue
 		} else if err != nil {
@@ -159,7 +158,7 @@ func RenderAllScrolls() int {
 				return
 			}
 			id := Id(strings.TrimSuffix(file.Name(), ".tex"))
-			if err := ProcessScroll(id); err != nil && err != NoSuchScrollError {
+			if err := renderScroll(id); err != nil && err != NoSuchScrollError {
 				log.Printf("%s\nERROR\n%s\n%v\n%s\n", hashes, hashes, err, hashes)
 			}
 			ch <- 1
