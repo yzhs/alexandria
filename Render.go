@@ -126,10 +126,12 @@ func RenderListOfScrolls(ids []Scroll) int {
 	for _, foo := range ids {
 		id := foo.Id
 		err := renderScroll(id)
-		if err == NoSuchScrollError {
-			continue
-		} else if err != nil {
-			log.Panic("An error ocurred when processing scroll ", id, ": ", err)
+		if err != nil {
+			if err == NoSuchScrollError {
+				continue
+			} else {
+				log.Panic("An error ocurred when processing scroll ", id, ": ", err)
+			}
 		} else {
 			numScrolls += 1
 		}
