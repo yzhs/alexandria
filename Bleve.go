@@ -34,46 +34,17 @@ func touch(file string) error {
 	return os.Chtimes(file, now, now)
 }
 
-func GenerateIndex() error {
-	// TODO handle multiple fields, i.e. the main text, @source, @type, tags, etc.
-	newIndex := false
-	// Try to open an existing index or create a new one if none exists.
-	index, err := openIndex()
-	if err != nil {
-		enTextMapping := bleve.NewTextFieldMapping()
-		enTextMapping.Analyzer = "en"
-
-		simpleMapping := bleve.NewTextFieldMapping()
-		simpleMapping.Analyzer = simple.Name
-
-		typeMapping := bleve.NewTextFieldMapping()
-		typeMapping.Analyzer = keyword.Name
-
-		scrollMapping := bleve.NewDocumentMapping()
-		scrollMapping.AddFieldMappingsAt("id", simpleMapping)
-		scrollMapping.AddFieldMappingsAt("content", enTextMapping)
-		scrollMapping.AddFieldMappingsAt("type", typeMapping)
-		scrollMapping.AddFieldMappingsAt("source", enTextMapping)
-		scrollMapping.AddFieldMappingsAt("tag", enTextMapping)
-		scrollMapping.AddFieldMappingsAt("hidden", enTextMapping)
-		scrollMapping.AddFieldMappingsAt("other", enTextMapping)
-
-		mapping := bleve.NewIndexMapping()
-		mapping.DefaultAnalyzer = "en"
-		mapping.DefaultMapping = scrollMapping
-
-		index, err = bleve.New(Config.AlexandriaDirectory+"bleve", mapping)
-		if err != nil {
-			panic(err)
-		}
-		newIndex = true
-	}
-	defer index.Close()
-
-	files, err := ioutil.ReadDir(Config.KnowledgeDirectory)
+// Add all documents to the index that have been created or modified since the
+// last time this function was executed.
+//
+// Note that this function does *not* remove deleted documents from the index.
+// See `RemoveFromIndex`.
+func UpdateIndex() error {
+	index, isNewIndex, err := openOrCreateIndex()
 	if err != nil {
 		return err
 	}
+	defer index.Close()
 
 	indexUpdateFile := Config.AlexandriaDirectory + "index_updated"
 	indexUpdateTime, err := getModTime(indexUpdateFile)
@@ -82,37 +53,93 @@ func GenerateIndex() error {
 		return nil
 	}
 	// Save the time of this indexing operation
-	err = touch(Config.AlexandriaDirectory + "index_updated")
+	err = touch(indexUpdateFile)
+	TryLogError(err)
+
+	files, err := ioutil.ReadDir(Config.KnowledgeDirectory)
 	if err != nil {
-		LogError(err)
+		return err
 	}
 
 	batch := index.NewBatch()
 	for _, file := range files {
-		// Check whether the scroll is newer than the index.
-		modTime, err := getModTime(Config.KnowledgeDirectory + file.Name())
-		if err != nil {
-			LogError(err)
+		if !isNewIndex && isOlderThan(file, indexUpdateTime) {
 			continue
 		}
+
 		id := strings.TrimSuffix(file.Name(), ".tex")
-		if modTime < indexUpdateTime && !newIndex {
-			continue
+		scroll, err := loadAndParseScrollContent(id, file)
+		if err == nil {
+			batch.Index(id, scroll)
 		}
-
-		// Load and parse the scroll content
-		contentBytes, err := ioutil.ReadFile(Config.KnowledgeDirectory + file.Name())
-		TryLogError(err)
-		content := string(contentBytes)
-		scroll := Parse(id, content)
-
-		batch.Index(id, scroll)
 	}
 	index.Batch(batch)
 
 	return nil
 }
 
+func openOrCreateIndex() (bleve.Index, bool, error) {
+	isNewIndex := false
+
+	index, err := openIndex()
+	if err != nil {
+		index, err = createNewIndex()
+		isNewIndex = true
+	}
+
+	return index, isNewIndex, err
+}
+
+func openIndex() (bleve.Index, error) {
+	return bleve.Open(Config.AlexandriaDirectory + "bleve")
+}
+
+func createNewIndex() (bleve.Index, error) {
+	enTextMapping := bleve.NewTextFieldMapping()
+	enTextMapping.Analyzer = "en"
+
+	simpleMapping := bleve.NewTextFieldMapping()
+	simpleMapping.Analyzer = simple.Name
+
+	typeMapping := bleve.NewTextFieldMapping()
+	typeMapping.Analyzer = keyword.Name
+
+	scrollMapping := bleve.NewDocumentMapping()
+	scrollMapping.AddFieldMappingsAt("id", simpleMapping)
+	scrollMapping.AddFieldMappingsAt("content", enTextMapping)
+	scrollMapping.AddFieldMappingsAt("type", typeMapping)
+	scrollMapping.AddFieldMappingsAt("source", enTextMapping)
+	scrollMapping.AddFieldMappingsAt("tag", enTextMapping)
+	scrollMapping.AddFieldMappingsAt("hidden", enTextMapping)
+	scrollMapping.AddFieldMappingsAt("other", enTextMapping)
+
+	mapping := bleve.NewIndexMapping()
+	mapping.DefaultAnalyzer = "en"
+	mapping.DefaultMapping = scrollMapping
+
+	return bleve.New(Config.AlexandriaDirectory+"bleve", mapping)
+}
+
+func isOlderThan(file os.FileInfo, indexUpdateTime int64) bool {
+	modTime, err := getModTime(Config.KnowledgeDirectory + file.Name())
+	if err != nil {
+		LogError(err)
+		return true
+	} else {
+		return modTime < indexUpdateTime
+	}
+}
+
+func loadAndParseScrollContent(id string, file os.FileInfo) (Scroll, error) {
+	contentBytes, err := ioutil.ReadFile(Config.KnowledgeDirectory + file.Name())
+	TryLogError(err)
+	content := string(contentBytes)
+	scroll := Parse(id, content)
+	return scroll, err
+}
+
+// Remove the specified document from the index. This is necessary as
+// `UpdateIndex` has no way of knowing if a document was deleted.
 func RemoveFromIndex(id Id) error {
 	index, err := openIndex()
 	if err != nil {
@@ -122,8 +149,26 @@ func RemoveFromIndex(id Id) error {
 	return index.Delete(string(id))
 }
 
-func openIndex() (bleve.Index, error) {
-	return bleve.Open(Config.AlexandriaDirectory + "bleve")
+// Get a list of scrolls matching the query.
+func FindScrolls(query string) (Results, error) {
+	results, err := searchBleve(query)
+	if err != nil {
+		return Results{}, err
+	}
+	var x XelatexImagemagickRenderer
+	n := RenderListOfScrolls(results.Ids, x)
+	ids := make([]Scroll, n)
+	i := 0
+	for _, id := range results.Ids {
+		if _, err := os.Stat(Config.KnowledgeDirectory + string(id.Id) + ".tex"); os.IsNotExist(err) {
+			continue
+		}
+		ids[i] = Scroll{Id: id.Id}
+		i += 1
+	}
+	results.Total = n // The number of hits can be wrong if scrolls have been deleted
+
+	return results, nil
 }
 
 func searchBleve(queryString string) (Results, error) {
@@ -167,28 +212,6 @@ func searchBleve(queryString string) (Results, error) {
 	}
 
 	return Results{ids[:len(searchResults.Hits)], int(searchResults.Total)}, nil
-}
-
-// Get a list of scrolls matching the query.
-func FindScrolls(query string) (Results, error) {
-	results, err := searchBleve(query)
-	if err != nil {
-		return Results{}, err
-	}
-	var x XelatexImagemagickRenderer
-	n := RenderListOfScrolls(results.Ids, x)
-	ids := make([]Scroll, n)
-	i := 0
-	for _, id := range results.Ids {
-		if _, err := os.Stat(Config.KnowledgeDirectory + string(id.Id) + ".tex"); os.IsNotExist(err) {
-			continue
-		}
-		ids[i] = Scroll{Id: id.Id}
-		i += 1
-	}
-	results.Total = n // The number of hits can be wrong if scrolls have been deleted
-
-	return results, nil
 }
 
 func ComputeStatistics() Statistics {
