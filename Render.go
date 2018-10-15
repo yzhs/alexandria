@@ -47,9 +47,33 @@ func (e *errTemplateReader) readTemplate(name string) {
 	e.doc += tmp
 }
 
-// Create a LaTeX file from the content of the given scroll together with all
-// the appropriate templates.  The resulting file stored in the temp directory.
-func scrollToLatex(id Id) error {
+type RenderBackend interface {
+	// Create a LaTeX file from the content of the given scroll together
+	// with all the appropriate templates.  The resulting file stored in
+	// the temp directory.
+	scrollToLatex(id Id)
+
+	// Compile a LaTeX file with the given id to produce a PDF file.  Both
+	// input and output files are in the temp directory.
+	latexToPdf(id Id)
+
+	// Convert PDF to PNG, storing the result in the cache directory.  From
+	// there, it can be served by the web server or displayed to the user
+	// via some other user interface.
+	pdfToPng(id Id)
+
+	deleteTemporaryFiles(id Id)
+
+	err() error
+	message() string
+}
+
+type XelatexImagemagickRenderer struct {
+	error error
+	msg   string
+}
+
+func (x XelatexImagemagickRenderer) scrollToLatex(id Id) {
 	var e errTemplateReader
 
 	scrollText, err := readScroll(id)
@@ -59,10 +83,12 @@ func scrollToLatex(id Id) error {
 			if err != nil {
 				LogError(err)
 			}
-			return NoSuchScrollError
+			x.error = NoSuchScrollError
+			return
 		}
 		LogError(err)
-		return err
+		x.error = err
+		return
 	}
 	scroll := Parse(string(id), scrollText)
 
@@ -73,59 +99,74 @@ func scrollToLatex(id Id) error {
 	e.readTemplate("footer")
 
 	if e.err != nil {
-		return e.err
+		x.error = e.err
+		return
 	}
-	return writeTemp(id, e.doc)
+	x.error = writeTemp(id, e.doc)
 }
 
-// Compile a LaTeX file with the given id to produce a PDF file.  Both input
-// and output files are in the temp directory.
-func latexToPdf(id Id) error {
+func (x XelatexImagemagickRenderer) latexToPdf(id Id) {
+	if x.error != nil {
+		return
+	}
+
 	msg, err := exec.Command("xelatex", "-interaction", "nonstopmode",
 		"-output-directory", Config.TempDirectory,
 		Config.TempDirectory+string(id)).CombinedOutput()
+	x.error = err
 	if err != nil {
-		log.Fatal(string(msg))
+		x.msg = string(msg)
 	}
-	return err
 }
 
-// Convert PDF to PNG, storing the result in the cache directory.  From there,
-// it can be served by the web server or displayed to the user via some other
-// user interface.
-func pdfToPng(i Id) error {
+func (x XelatexImagemagickRenderer) pdfToPng(i Id) {
+	if x.error != nil {
+		return
+	}
+
 	id := string(i)
-	return exec.Command("convert", "-trim",
+	x.error = exec.Command("convert", "-trim",
 		"-quality", strconv.Itoa(Config.Quality),
 		"-density", strconv.Itoa(Config.Dpi),
 		Config.TempDirectory+id+".pdf", Config.CacheDirectory+id+".png").Run()
+
+}
+
+func (x XelatexImagemagickRenderer) deleteTemporaryFiles(id Id) {
+}
+
+func (x XelatexImagemagickRenderer) err() error {
+	return x.error
+}
+
+func (x XelatexImagemagickRenderer) message() string {
+	return x.msg
 }
 
 // Generate a PNG image from a given scroll, if there is no up-to-date image.
-func renderScroll(id Id) error {
+func renderScroll(id Id, renderer RenderBackend) error {
 	if isUpToDate(id) {
 		return nil
 	}
 
-	err := scrollToLatex(id)
-	if err != nil {
-		return err
-	}
+	renderer.scrollToLatex(id)
+	renderer.latexToPdf(id)
+	renderer.pdfToPng(id)
+	renderer.deleteTemporaryFiles(id)
 
-	err = latexToPdf(id)
+	err := renderer.err()
 	if err != nil {
-		return err
+		log.Panic("Error: ", err, "\n", renderer.message())
 	}
-
-	return pdfToPng(id)
+	return err
 }
 
-func RenderListOfScrolls(ids []Scroll) int {
+func RenderListOfScrolls(ids []Scroll, renderer RenderBackend) int {
 	numScrolls := 0
 
 	for _, foo := range ids {
 		id := foo.Id
-		err := renderScroll(id)
+		err := renderScroll(id, renderer)
 		if err != nil {
 			if err == NoSuchScrollError {
 				continue
@@ -140,7 +181,7 @@ func RenderListOfScrolls(ids []Scroll) int {
 	return numScrolls
 }
 
-func RenderAllScrolls() int {
+func RenderAllScrolls(renderer RenderBackend) int {
 	files, err := ioutil.ReadDir(Config.KnowledgeDirectory)
 	if err != nil {
 		panic(err)
@@ -159,7 +200,7 @@ func RenderAllScrolls() int {
 				return
 			}
 			id := Id(strings.TrimSuffix(file.Name(), ".tex"))
-			if err := renderScroll(id); err != nil && err != NoSuchScrollError {
+			if err := renderScroll(id, renderer); err != nil && err != NoSuchScrollError {
 				log.Printf("%s\nERROR\n%s\n%v\n%s\n", hashes, hashes, err, hashes)
 			}
 			ch <- 1

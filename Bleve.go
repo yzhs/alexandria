@@ -175,7 +175,8 @@ func FindScrolls(query string) (Results, error) {
 	if err != nil {
 		return Results{}, err
 	}
-	n := RenderListOfScrolls(results.Ids)
+	var x XelatexImagemagickRenderer
+	n := RenderListOfScrolls(results.Ids, x)
 	ids := make([]Scroll, n)
 	i := 0
 	for _, id := range results.Ids {

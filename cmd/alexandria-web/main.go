@@ -27,7 +27,7 @@ import (
 
 	flag "github.com/ogier/pflag"
 
-	. "github.com/yzhs/alexandria"
+	"github.com/yzhs/alexandria"
 )
 
 const (
@@ -37,7 +37,7 @@ const (
 
 // Generate a HTML file describing the size of the library.
 func printStats() string {
-	stats := ComputeStatistics()
+	stats := alexandria.ComputeStatistics()
 	n := stats.Num()
 	size := float32(stats.Size()) / 1024.0
 	return fmt.Sprintf("The library contains %v scrolls with a total size of %.1f kiB.\n", n, size)
@@ -67,18 +67,18 @@ func mainHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func loadHTMLTemplate(name string) ([]byte, error) {
-	return ioutil.ReadFile(Config.TemplateDirectory + "html/" + name + ".html")
+	return ioutil.ReadFile(alexandria.Config.TemplateDirectory + "html/" + name + ".html")
 }
 
 type result struct {
 	Query        string
-	Matches      []Scroll
+	Matches      []alexandria.Scroll
 	NumMatches   int
 	TotalMatches int
 }
 
 func renderTemplate(w http.ResponseWriter, templateFile string, resultData result) {
-	t, err := template.ParseFiles(Config.TemplateDirectory + "html/" + templateFile + ".html")
+	t, err := template.ParseFiles(alexandria.Config.TemplateDirectory + "html/" + templateFile + ".html")
 	if err != nil {
 		fmt.Fprintf(w, "Error: %v", err)
 		return
@@ -103,7 +103,7 @@ func queryHandler(w http.ResponseWriter, r *http.Request) {
 		mainHandler(w, r)
 		return
 	}
-	results, err := FindScrolls(query)
+	results, err := alexandria.FindScrolls(query)
 	if err != nil {
 		panic(err)
 	}
@@ -123,8 +123,8 @@ func main() {
 	flag.BoolVar(&profile, "profile", false, "\tEnable profiler")
 	flag.Parse()
 
-	InitConfig()
-	Config.MaxResults = MAX_RESULTS
+	alexandria.InitConfig()
+	alexandria.Config.MaxResults = MAX_RESULTS
 
 	if profile {
 		f, err := os.Create("alexandria.prof")
@@ -138,7 +138,7 @@ func main() {
 	// TODO run GenerateIndex() when there is something new
 
 	if version {
-		fmt.Println(NAME, VERSION)
+		fmt.Println(alexandria.NAME, alexandria.VERSION)
 		return
 	}
 
@@ -146,8 +146,8 @@ func main() {
 	http.HandleFunc("/stats", statsHandler)
 	http.HandleFunc("/search", queryHandler)
 	http.HandleFunc("/alexandria.edit", editHandler)
-	serveDirectory("/images/", Config.CacheDirectory)
-	serveDirectory("/static/", Config.TemplateDirectory+"static")
+	serveDirectory("/images/", alexandria.Config.CacheDirectory)
+	serveDirectory("/static/", alexandria.Config.TemplateDirectory+"static")
 	err := http.ListenAndServe(LISTEN_ON, nil)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v", err)
