@@ -4,43 +4,98 @@
 	<title>{{.Query}} - Alexandria</title>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
-	<link rel="stylesheet" type="text/css" href="static/normalize.css"/>
-	<link rel="stylesheet" type="text/css" href="static/skeleton.css"/>
-	<link rel="stylesheet" type="text/css" href="static/color.css"/>
+	<style type="text/css" media="screen">
+	    body {
+		padding-left: 1rem;
+	    }
+
+	    form.input-group {
+		max-width: 670px;
+	    }
+
+	    .scroll {
+		-webkit-column-break-inside: avoid; /* Chrome, Safari */
+		page-break-inside: avoid;           /* Theoretically FF 20+ */
+		break-inside: avoid-column;         /* IE 11 */
+		display:table;                      /* Actually FF 20+ */
+
+		/*max-width: 660px;*/
+		margin: 1em 0;
+		padding: 0 0 0.4em;
+
+		border-left: 2px solid #007bff;
+		border-spacing: 10px 0px;
+	    }
+
+	    .scroll-id {
+		background-color: #fff;
+		color: #888;
+		font-family: monospace;
+		border: none;
+		margin: 0;
+		padding: 0;
+	    }
+	    .scroll-id:hover {
+		color: #000;
+	    }
+
+	    .scroll-content {
+		text-indent: -99999px;
+		position: absolute;
+	    }
+
+	    .metadata {
+		color: #555;
+	    }
+
+	    a.tag {
+		padding: 0.6em;
+		white-space: nowrap;
+		font-weight: 400;
+	    }
+
+	</style>
+	<link rel="stylesheet" type="text/css" href="static/bootstrap.min.css"/>
 	<script src="static/clipboard.js" type="text/javascript"></script>
 {{$query := .Query}}
 </head>
 <body>
-<header id="form">
-	<form action="search" method="get" accept-charset="utf-8">
-		<input type="search" name="q" id="query" placeholder="Enter search…" value="{{.Query}}" placeholder="Enter search…" autofocus/>
-		<button type="submit" id="search" style="line-height: 39px;">Search</button>
+    <header class="container-fluid mt-3 mb-3">
+	<form class="input-group" action="search" method="get" accept-charset="utf-8">
+	    <input type="search" name="q" id="query" class="form-control"
+	    placeholder="Enter search…" value="{{.Query}}" autofocus/>
+	    <div class="input-group-append">
+		<button type="submit" id="search" class="btn btn-primary">Search</button>
+	    </div>
 	</form>
-</header>
+    </header>
 
-<div id="main">{{range $value := .Matches}}
+    <main>{{range $value := .Matches}}
 	<div class="scroll">
-		<button class="id" data-clipboard-text="{{$value.Id}}">{{$value.Id}}</button><br>
-		<div class="content">
+	    <button class="scroll-id mb-2" data-clipboard-text="{{$value.Id}}">
+		{{$value.Id}}
+	    </button>
+	    <br>
+	    <div class="scroll-content">
 {{$value.Content}}
+	    </div>
+	    <a href="alexandria.edit?id={{$value.Id}}">
+		<img class="img" src="images/{{$value.Id}}.png" alt=""/>
+	    </a>
+	    <div class="metadata mt-3">
+		{{ range $line := $value.SourceLines }}@source {{ $line }}<br>{{ end }}
+		{{ range $line := $value.OtherLines }}{{ $line }}<br>{{ end }}
+		<div class="tags">
+		    {{range $index, $tag := $value.Tags}}<a class="tag badge badge-secondary" href='search?q={{$query}} tag:"{{$tag}}"'>{{$tag}}</a> {{ end }}
 		</div>
-		<a href="alexandria.edit?id={{$value.Id}}">
-			<img class="img" src="images/{{$value.Id}}.png" alt=" " />
-		</a>
-		<div class="metadata">
-			{{ range $line := $value.SourceLines }}@source {{ $line }}<br>{{ end }}
-			{{ range $line := $value.OtherLines }}{{ $line }}<br>{{ end }}
-			<div class="tags">
-			    {{range $index, $tag := $value.Tags}}<a class="tag" href='search?q={{$query}} tag:"{{$tag}}"'>{{$tag}}</a> {{ end }}
-			</div>
-		</div>
+	    </div>
 	</div>{{ end }}
-</div>
-<footer>
+    </main>
+    <footer>
 	{{ if eq .NumMatches 0 }}Found no matching scrolls.{{ else if le .TotalMatches 20 }}Displaying matches 1–{{.NumMatches}} of {{.TotalMatches}}. {{ else }}Displaying matches 1–20 of {{.TotalMatches}}.{{ end }}
-</footer>
-<script>
-    var clipboard = new Clipboard('.id');
-</script>
+    </footer>
+    <script>
+	var clipboard = new Clipboard('.id');
+    </script>
 </body>
 </html>
