@@ -86,9 +86,8 @@ func latexToPdf(id Id) error {
 		Config.TempDirectory+string(id)).CombinedOutput()
 	if err != nil {
 		log.Fatal(string(msg))
-		return err
 	}
-	return nil
+	return err
 }
 
 // Convert PDF to PNG, storing the result in the cache directory.  From there,
