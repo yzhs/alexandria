@@ -55,7 +55,7 @@ a.tag {
 	font-weight: 400;
 }
 
-.badge2 {
+.badge {
 	display: inline-block;
 	padding: .25em .4em;
 	font-size: 75%;
@@ -67,47 +67,47 @@ a.tag {
 	border-radius: .25rem;
 }
 
-.badge2-secondary {
+.badge-secondary {
 	color: #fff;
 	background-color: #6c757d;
 }
 
-.badge2-secondary[href]:focus, .badge2-secondary[href]:hover {
+.badge-secondary[href]:focus, .badge-secondary[href]:hover {
 	color: #fff;
 	text-decoration: none;
 	background-color: #545b62;
 }
 
-.container-fluid2 {
+.container-fluid {
 	margin: 1em 0;
 }
 
-.input-group2 {
+.input-group {
 	display: flex;
 	flex: 1 1 auto;
 	max-width: 50rem;
 }
 
-.input-group2 > .form-control2:not(:last-child) {
+.input-group > .form-control:not(:last-child) {
 	border-top-right-radius: 0;
 	border-bottom-right-radius: 0;
 }
-.input-group > .form-control2:focus {
+.input-group > .form-control:focus {
 	z-index: 3;
 }
-.input-group2 > .form-control2 {
+.input-group > .form-control {
 	-ms-flex: 1 1 auto;
 	flex: 1 1 auto;
 	width: 1%;
 	margin-bottom: 0;
 }
 
-.input-group2-append .btn, .input-group2-prepend .btn {
+.input-group-append .btn, .input-group-prepend .btn {
 	position: relative;
 	z-index: 2;
 }
 
-.form-control2 {
+.form-control {
 	display: block;
 	width: 100%;
 	height: calc(2.25rem + 2px);
@@ -137,7 +137,7 @@ button#search {
 	border-bottom-left-radius:0;
 }
 
-.btn2 {
+.btn {
 	display: inline-block;
 	font-weight: 400;
 	text-align: center;
@@ -159,17 +159,17 @@ button#search {
 	transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
-.btn2-primary:hover {
+.btn-primary:hover {
 	color: #fff;
 	background-color: #0069d9;
 	border-color: #0062cc;
 }
 
-.btn2:hover, .btn2:focus {
+.btn:hover, .btn:focus {
 	text-decoration: none;
 }
 
-.btn2-primary {
+.btn-primary {
 	color: #fff;
 	background-color: #007bff;
 	border-color: #007bff;

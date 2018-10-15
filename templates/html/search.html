@@ -9,40 +9,44 @@
 {{$query := .Query}}
 </head>
 <body>
-    <header class="container-fluid2">
-	<form class="input-group2" action="search" method="get" accept-charset="utf-8">
-	    <input type="search" name="q" id="query" class="form-control form-control2"
-	    placeholder="Enter search…" value="{{.Query}}" autofocus/>
-	    <button type="submit" id="search" class="btn2 btn2-primary">Search</button>
-	</form>
+    <header class="container-fluid">
+		<form class="input-group" action="search" method="get" accept-charset="utf-8">
+			<input type="search" name="q" id="query" class="form-control form-control"
+			placeholder="Enter search…" value="{{.Query}}" autofocus/>
+			<button type="submit" id="search" class="btn btn-primary">Search</button>
+		</form>
     </header>
 
     <main>{{range $value := .Matches}}
-	<div class="scroll">
-	    <button class="scroll-id" data-clipboard-text="{{$value.Id}}">
-		{{$value.Id}}
-	    </button>
-	    <br>
-	    <div class="scroll-content">
-{{$value.Content}}
-	    </div>
-	    <a href="alexandria.edit?id={{$value.Id}}">
-		<img class="img" src="images/{{$value.Id}}.png" alt=""/>
-	    </a>
-	    <div class="metadata">
-		{{ range $line := $value.SourceLines }}@source {{ $line }}<br>{{ end }}
-		{{ range $line := $value.OtherLines }}{{ $line }}<br>{{ end }}
-		<div class="tags">
-		    {{range $index, $tag := $value.Tags}}<a class="tag badge2 badge2-secondary" href='search?q={{$query}} tag:"{{$tag}}"'>{{$tag}}</a> {{ end }}
-		</div>
-	    </div>
-	</div>{{ end }}
-    </main>
-    <footer>
-	{{ if eq .NumMatches 0 }}Found no matching scrolls.{{ else if le .TotalMatches 20 }}Displaying matches 1–{{.NumMatches}} of {{.TotalMatches}}. {{ else }}Displaying matches 1–20 of {{.TotalMatches}}.{{ end }}
+		<div class="scroll">
+			<button class="scroll-id" data-clipboard-text="{{$value.Id}}">
+				{{$value.Id}}
+			</button>
+			<br>
+			<div class="scroll-content">{{$value.Content}}</div>
+			<a href="alexandria.edit?id={{$value.Id}}">
+				<img class="img" src="images/{{$value.Id}}.png" alt=""/>
+			</a>
+			<div class="metadata">
+				{{ range $line := $value.SourceLines }}@source {{ $line }}<br>{{ end }}
+				{{ range $line := $value.OtherLines }}{{ $line }}<br>{{ end }}
+				<div class="tags">
+					{{range $index, $tag := $value.Tags}}
+					<a class="tag badge badge-secondary" href='search?q={{$query}} tag:"{{$tag}}"'>
+						{{$tag}}
+					</a>
+					{{ end }}
+				</div>
+			</div>
+		</div>{{ end }}
+	</main>
+
+	<footer>
+		{{ if eq .NumMatches 0 }}Found no matching scrolls.{{ else if le .TotalMatches 20 }}Displaying matches 1–{{.NumMatches}} of {{.TotalMatches}}. {{ else }}Displaying matches 1–20 of {{.TotalMatches}}.{{ end }}
     </footer>
+
     <script>
-	var clipboard = new Clipboard('.id');
+		var clipboard = new Clipboard('.id');
     </script>
 </body>
 </html>
