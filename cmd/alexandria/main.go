@@ -29,7 +29,10 @@ import (
 )
 
 func printStats() {
-	stats := alexandria.ComputeStatistics()
+	stats, err := alexandria.ComputeStatistics()
+	if err != nil {
+		panic(err)
+	}
 	n := stats.NumberOfScrolls()
 	size := float32(stats.TotalSize()) / 1024.0
 	fmt.Printf("The library contains %v scrolls with a total size of %.1f kiB.\n", n, size)

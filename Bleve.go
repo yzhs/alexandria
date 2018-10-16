@@ -25,9 +25,9 @@ import (
 	"time"
 
 	"github.com/blevesearch/bleve"
-
 	"github.com/blevesearch/bleve/analysis/analyzer/keyword"
 	"github.com/blevesearch/bleve/analysis/analyzer/simple"
+	"github.com/pkg/errors"
 )
 
 // UpdateIndex adds all documents to the index that have been created or
@@ -38,7 +38,7 @@ import (
 func UpdateIndex() error {
 	index, isNewIndex, err := openOrCreateIndex()
 	if err != nil {
-		return err
+		return errors.Wrap(err, "open or create index")
 	}
 	defer index.Close()
 
@@ -54,7 +54,7 @@ func UpdateIndex() error {
 
 	files, err := ioutil.ReadDir(Config.KnowledgeDirectory)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "read knowledge directory")
 	}
 
 	batch := index.NewBatch()
@@ -260,22 +260,24 @@ func loadMatchingScrolls(searchResults *bleve.SearchResult) []Scroll {
 
 // ComputeStatistics counts the number of scrolls in the library and computes
 // their combined size.
-func ComputeStatistics() Statistics {
+func ComputeStatistics() (Statistics, error) {
 	index, err := openExistingIndex()
 	if err != nil {
-		LogError(err)
+		return Stats{}, errors.Wrap(err, "open existing index")
 	}
 	defer index.Close()
 
-	num, size := getDirSize(Config.KnowledgeDirectory)
-	if err == nil {
-		tmp, err := index.DocCount()
-		if err != nil {
-			LogError(err)
-		} else {
-			num = int(tmp)
-		}
+	num, size, err := getDirSize(Config.KnowledgeDirectory)
+	if err != nil {
+		return Stats{}, errors.Wrap(err, "get size of library directory")
 	}
 
-	return Stats{num, size}
+	tmp, err := index.DocCount()
+	if err != nil {
+		return Stats{}, errors.Wrap(err, "get number of scrolls in the index")
+	} else {
+		num = int(tmp)
+	}
+
+	return Stats{num, size}, nil
 }

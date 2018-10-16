@@ -21,11 +21,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+
+	"github.com/pkg/errors"
 )
 
 // LogError writes things to stderr.
 func LogError(err interface{}) {
-	fmt.Fprintln(os.Stderr, err)
+	fmt.Fprintf(os.Stderr, "%+v\n", err)
 }
 
 // TryLogError checks whether an error occurred, and logs it if necessary.
@@ -38,42 +40,43 @@ func TryLogError(err interface{}) {
 // Load the content of a given scroll from disk.
 func readScroll(id ID) (string, error) {
 	result, err := ioutil.ReadFile(Config.KnowledgeDirectory + string(id) + ".tex")
-	return string(result), err
+	return string(result), errors.Wrapf(err, "read scroll %v", id)
 }
 
 // Load the content of a template file with the given name.
 func readTemplate(filename string) (string, error) {
 	result, err := ioutil.ReadFile(Config.TemplateDirectory + "tex/" + filename + ".tex")
-	return string(result), err
+	return string(result), errors.Wrapf(err, "read template %v", filename)
 }
 
 // Write a TeX file with the given name and content to Alexandria's temp
 // directory.
 func writeTemp(id ID, data string) error {
-	return ioutil.WriteFile(Config.TempDirectory+string(id)+".tex", []byte(data), 0644)
+	err := ioutil.WriteFile(Config.TempDirectory+string(id)+".tex", []byte(data), 0644)
+	return errors.Wrapf(err, "write %v.tex to temporary directory", id)
 }
 
 // Compute the combined size of all files in a given directory.
-func getDirSize(dir string) (int, int64) {
+func getDirSize(dir string) (int, int64, error) {
 	directory, err := os.Open(dir)
 	TryLogError(err)
 	defer directory.Close()
 	fileInfo, err := directory.Readdir(0)
 	if err != nil {
-		panic(err)
+		return 0, 0, errors.Wrapf(err, "read directory %v", directory)
 	}
 	result := int64(0)
 	for _, file := range fileInfo {
 		result += file.Size()
 	}
-	return len(fileInfo), result
+	return len(fileInfo), result, nil
 }
 
 // Get the time a given file was last modified as a Unix time.
 func getModTime(file string) (int64, error) {
 	info, err := os.Stat(file)
 	if err != nil {
-		return -1, err
+		return -1, errors.Wrapf(err, "stat %v", file)
 	}
 	return info.ModTime().Unix(), nil
 }

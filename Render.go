@@ -18,13 +18,14 @@
 package alexandria
 
 import (
-	"errors"
 	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
 	"strconv"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 // ErrNoSuchScroll is used when a query returns a scroll ID that is no longer
@@ -46,7 +47,7 @@ func (e *errTemplateReader) readTemplate(name string) {
 	}
 
 	tmp, err := readTemplate(name)
-	e.err = err
+	e.err = errors.Wrapf(err, "read template %v", name)
 	e.doc += tmp
 }
 
@@ -69,14 +70,12 @@ type RenderBackend interface {
 	deleteTemporaryFiles(id ID)
 
 	err() error
-	message() string
 }
 
 // XelatexImagemagickRenderer uses xelatex to handle the LaTeX-to-PDF
 // translation, ImageMagick to convert the PDF to a PNG.
 type XelatexImagemagickRenderer struct {
 	error error
-	msg   string
 }
 
 func (x XelatexImagemagickRenderer) scrollToLatex(id ID) {
@@ -92,7 +91,6 @@ func (x XelatexImagemagickRenderer) scrollToLatex(id ID) {
 			x.error = ErrNoSuchScroll
 			return
 		}
-		LogError(err)
 		x.error = err
 		return
 	}
@@ -105,10 +103,11 @@ func (x XelatexImagemagickRenderer) scrollToLatex(id ID) {
 	e.readTemplate("footer")
 
 	if e.err != nil {
-		x.error = e.err
+		x.error = errors.Wrapf(e.err, "producing latex file for scroll %v", id)
 		return
 	}
-	x.error = writeTemp(id, e.doc)
+	err = writeTemp(id, e.doc)
+	x.error = errors.Wrapf(err, "writing latex file %v.tex to temporary directory", id)
 }
 
 func (x XelatexImagemagickRenderer) latexToPdf(id ID) {
@@ -119,10 +118,7 @@ func (x XelatexImagemagickRenderer) latexToPdf(id ID) {
 	msg, err := exec.Command("xelatex", "-interaction", "nonstopmode",
 		"-output-directory", Config.TempDirectory,
 		Config.TempDirectory+string(id)).CombinedOutput()
-	x.error = err
-	if err != nil {
-		x.msg = string(msg)
-	}
+	x.error = errors.Wrapf(err, "XeLaTeX build: %v", msg)
 }
 
 func (x XelatexImagemagickRenderer) pdfToPng(i ID) {
@@ -146,10 +142,6 @@ func (x XelatexImagemagickRenderer) err() error {
 	return x.error
 }
 
-func (x XelatexImagemagickRenderer) message() string {
-	return x.msg
-}
-
 // Generate a PNG image from a given scroll, if there is no up-to-date image.
 func renderScroll(id ID, renderer RenderBackend) error {
 	if isUpToDate(id) {
@@ -161,11 +153,7 @@ func renderScroll(id ID, renderer RenderBackend) error {
 	renderer.pdfToPng(id)
 	renderer.deleteTemporaryFiles(id)
 
-	err := renderer.err()
-	if err != nil {
-		log.Panic("Error: ", err, "\n", renderer.message())
-	}
-	return err
+	return errors.Wrap(renderer.err(), "rendering")
 }
 
 // RenderListOfScrolls takes a list of scroll IDs and passes them to the given

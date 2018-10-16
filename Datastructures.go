@@ -49,7 +49,7 @@ type ID string
 type Backend interface {
 	Search(query []string) ([]ID, error)
 	GenerateIndex() error
-	ComputeStatistics() Statistics
+	ComputeStatistics() (Statistics, error)
 }
 
 // Renderer allows you to render a scroll of a certain file type.

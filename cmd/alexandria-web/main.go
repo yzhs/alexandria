@@ -35,17 +35,16 @@ const (
 	MAX_RESULTS = 100
 )
 
-// Generate a HTML file describing the size of the library.
-func printStats() string {
-	stats := alexandria.ComputeStatistics()
-	n := stats.NumberOfScrolls()
-	size := float32(stats.TotalSize()) / 1024.0
-	return fmt.Sprintf("The library contains %v scrolls with a total size of %.1f kiB.\n", n, size)
-}
-
 // Send the statistics page to the client.
 func statsHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, printStats())
+	stats, err := alexandria.ComputeStatistics()
+	if err != nil {
+		fmt.Fprint(w, err)
+		return
+	}
+	n := stats.NumberOfScrolls()
+	size := float32(stats.TotalSize()) / 1024.0
+	fmt.Fprintf(w, "The library contains %v scrolls with a total size of %.1f kiB.\n", n, size)
 }
 
 // Handle the edit-link, causing the browser to open that scroll in an editor.
