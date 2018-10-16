@@ -93,9 +93,9 @@ func (x XelatexImagemagickRenderer) scrollToLatex(id ID) {
 	scroll := Parse(string(id), scrollText)
 
 	e.readTemplate("header")
-	e.readTemplate(scroll.DocumentType() + "_header")
+	e.readTemplate(scroll.Type + "_header")
 	e.doc += scroll.Content
-	e.readTemplate(scroll.DocumentType() + "_footer")
+	e.readTemplate(scroll.Type + "_footer")
 	e.readTemplate("footer")
 
 	if e.err != nil {

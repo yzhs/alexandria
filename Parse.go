@@ -21,32 +21,27 @@ import (
 	"strings"
 )
 
-// Figure out what type of a document we have
-func (s *Scroll) DocumentType() string {
-	return s.Type
-}
-
 // Return the lines of the last LaTeX comment block without the leading %.  In
 // addition, leading and trailing whitespace is removed.
 func findMetadataLines(doc string) []string {
 	var metadata []string
-	for _, line_ := range strings.Split(doc, "\n") {
-		line := strings.TrimSpace(line_)
-		if line == "" {
+	for _, line := range strings.Split(doc, "\n") {
+		trimmedLine := strings.TrimSpace(line)
+		if trimmedLine == "" {
 			continue
 		}
 
 		// If the current line does not begin with a LaTeX comment, we
 		// have not yet encountered the last block of comments, so we
 		// should discard all data gathered so far.
-		if line[0] != '%' {
+		if trimmedLine[0] != '%' {
 			metadata = make([]string, 0, 100) // FIXME magic constant
 			continue
 		}
 		// Remove any leading % and whitespaces
-		line = strings.TrimLeft(line, "%  \t")
-		if line != "" {
-			metadata = append(metadata, line)
+		trimmedLine = strings.TrimLeft(trimmedLine, "%  \t")
+		if trimmedLine != "" {
+			metadata = append(metadata, trimmedLine)
 		}
 	}
 	return metadata
@@ -83,9 +78,9 @@ func Parse(id, doc string) Scroll {
 	// TODO Handle different types of tags: @source, @doctype, @keywords, and normal tags.
 	var source []string
 	var hidden []string
-	var scroll_type string
+	var scrollType string
 	var tags []string
-	var other_lines []string
+	var otherLines []string
 
 	for _, line := range findMetadataLines(doc) {
 		switch {
@@ -95,39 +90,39 @@ func Parse(id, doc string) Scroll {
 			source = append(source, strings.TrimSpace(strings.TrimPrefix(line, "@source ")))
 		case strings.HasPrefix(line, "@type "):
 			tmp := strings.TrimSpace(strings.TrimPrefix(line, "@type "))
-			for _, type_ := range strings.Split(tmp, ",") {
+			for _, typ := range strings.Split(tmp, ",") {
 				// Ignore all but the first type, the other
 				// ones are just for searching
-				if scroll_type == "" {
-					scroll_type = strings.TrimSpace(type_)
+				if scrollType == "" {
+					scrollType = strings.TrimSpace(typ)
 					break
 				}
 			}
 		case strings.HasPrefix(line, "@"):
 			// Do not strip the @[a-zA-Z0-9\-]** prefix, otherwise
 			// there is no way to tell what the line signifies.
-			other_lines = append(other_lines, line)
+			otherLines = append(otherLines, line)
 		default:
 			tags = append(tags, parseTags(line)...)
 		}
 	}
 	content := stripComments(doc)
 
-	return Scroll{ID: ID(id), Content: content, Type: scroll_type,
+	return Scroll{ID: ID(id), Content: content, Type: scrollType,
 		SourceLines: source, Tags: tags, Hidden: hidden,
-		OtherLines: other_lines}
+		OtherLines: otherLines}
 }
 
 // Remove all lines that only contain a LaTeX comment.  This removes all the
 // medatata from a scroll.
 func stripComments(doc string) string {
 	var content string
-	for _, line_ := range strings.Split(doc, "\n\n") {
-		line := strings.TrimSpace(line_)
-		if len(line) > 0 && line[0] == '%' {
+	for _, line := range strings.Split(doc, "\n\n") {
+		trimmedLine := strings.TrimSpace(line)
+		if len(trimmedLine) > 0 && trimmedLine[0] == '%' {
 			continue
 		}
-		content += line + "\n\n"
+		content += trimmedLine + "\n\n"
 	}
 	return strings.TrimSpace(content)
 }

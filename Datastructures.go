@@ -85,8 +85,11 @@ type Configuration struct {
 
 // Scroll contains all the data contained in a document.
 type Scroll struct {
-	ID          ID       `json:"id"`
-	Content     string   `json:"content"`
+	ID      ID     `json:"id"`
+	Content string `json:"content"`
+	// Type is the type of document we are dealing with.  This might be
+	// something 'definition', 'lemma', etc.  It is used to select the
+	// appropriate template when rendering.
 	Type        string   `json:"type"`
 	SourceLines []string `json:"source"`
 	Tags        []string `json:"tag"`
