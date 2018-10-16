@@ -27,7 +27,10 @@ import (
 	"strings"
 )
 
-var NoSuchScrollError = errors.New("No such scroll")
+// ErrNoSuchScroll is used when a query returns a scroll ID that is no longer
+// in the library, i.e. has been deleted but RemoveFromIndex has not yet been
+// called on it.
+var ErrNoSuchScroll = errors.New("No such scroll")
 
 const hashes = "############################################################"
 
@@ -47,6 +50,7 @@ func (e *errTemplateReader) readTemplate(name string) {
 	e.doc += tmp
 }
 
+// RenderBackend describes a LaTeX->PDF->PNG pipeline.
 type RenderBackend interface {
 	// Create a LaTeX file from the content of the given scroll together
 	// with all the appropriate templates.  The resulting file stored in
@@ -68,6 +72,8 @@ type RenderBackend interface {
 	message() string
 }
 
+// XelatexImagemagickRenderer uses xelatex to handle the LaTeX-to-PDF
+// translation, ImageMagick to convert the PDF to a PNG.
 type XelatexImagemagickRenderer struct {
 	error error
 	msg   string
@@ -83,7 +89,7 @@ func (x XelatexImagemagickRenderer) scrollToLatex(id ID) {
 			if err != nil {
 				LogError(err)
 			}
-			x.error = NoSuchScrollError
+			x.error = ErrNoSuchScroll
 			return
 		}
 		LogError(err)
@@ -133,6 +139,7 @@ func (x XelatexImagemagickRenderer) pdfToPng(i ID) {
 }
 
 func (x XelatexImagemagickRenderer) deleteTemporaryFiles(id ID) {
+	// TODO delete Config.TempDirectory + id + ".*"
 }
 
 func (x XelatexImagemagickRenderer) err() error {
@@ -161,6 +168,8 @@ func renderScroll(id ID, renderer RenderBackend) error {
 	return err
 }
 
+// RenderListOfScrolls takes a list of scroll IDs and passes them to the given
+// rendering backend.
 func RenderListOfScrolls(ids []Scroll, renderer RenderBackend) int {
 	numScrolls := 0
 
@@ -168,19 +177,22 @@ func RenderListOfScrolls(ids []Scroll, renderer RenderBackend) int {
 		id := foo.ID
 		err := renderScroll(id, renderer)
 		if err != nil {
-			if err == NoSuchScrollError {
+			if err == ErrNoSuchScroll {
 				continue
 			} else {
 				log.Panic("An error ocurred when processing scroll ", id, ": ", err)
 			}
 		} else {
-			numScrolls += 1
+			numScrolls++
 		}
 	}
 
 	return numScrolls
 }
 
+// RenderAllScrolls goes through the library directory and renders every
+// available scroll.  This allows us to perform all the expensive LaTeX-to-PDF
+// conversions ahead-of-time, so queries can be answered more quickly.
 func RenderAllScrolls(renderer RenderBackend) int {
 	files, err := ioutil.ReadDir(Config.KnowledgeDirectory)
 	if err != nil {
@@ -200,7 +212,7 @@ func RenderAllScrolls(renderer RenderBackend) int {
 				return
 			}
 			id := ID(strings.TrimSuffix(file.Name(), ".tex"))
-			if err := renderScroll(id, renderer); err != nil && err != NoSuchScrollError {
+			if err := renderScroll(id, renderer); err != nil && err != ErrNoSuchScroll {
 				log.Printf("%s\nERROR\n%s\n%v\n%s\n", hashes, hashes, err, hashes)
 			}
 			ch <- 1
