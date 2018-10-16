@@ -40,8 +40,8 @@ func renderMatchesForQuery(query string) {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("There are %d matching scrolls.\n", len(results.Ids))
-	for _, scroll := range results.Ids {
+	fmt.Printf("There are %d matching scrolls.\n", len(results.IDs))
+	for _, scroll := range results.IDs {
 		fmt.Println("file://" + alexandria.Config.CacheDirectory + string(scroll.ID) + ".png")
 	}
 }

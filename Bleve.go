@@ -173,10 +173,10 @@ func FindScrolls(query string) (Results, error) {
 		return Results{}, err
 	}
 	var x XelatexImagemagickRenderer
-	n := RenderListOfScrolls(results.Ids, x)
+	n := RenderListOfScrolls(results.IDs, x)
 	ids := make([]Scroll, n)
 	i := 0
-	for _, id := range results.Ids {
+	for _, id := range results.IDs {
 		if _, err := os.Stat(Config.KnowledgeDirectory + string(id.ID) + ".tex"); os.IsNotExist(err) {
 			continue
 		}

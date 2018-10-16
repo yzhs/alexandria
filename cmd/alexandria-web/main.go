@@ -107,8 +107,8 @@ func queryHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err)
 	}
-	numMatches := len(results.Ids)
-	data := result{Query: query, NumMatches: numMatches, Matches: results.Ids[:min(20, numMatches)],
+	numMatches := len(results.IDs)
+	data := result{Query: query, NumMatches: numMatches, Matches: results.IDs[:min(20, numMatches)],
 		TotalMatches: results.Total}
 	renderTemplate(w, "search", data)
 }

@@ -19,13 +19,13 @@
 
     <main>{{range $value := .Matches}}
 		<div class="scroll">
-			<button class="scroll-id" data-clipboard-text="{{$value.Id}}">
-				{{$value.Id}}
+			<button class="scroll-id" data-clipboard-text="{{$value.ID}}">
+				{{$value.ID}}
 			</button>
 			<br>
 			<div class="scroll-content">{{$value.Content}}</div>
-			<a href="alexandria.edit?id={{$value.Id}}">
-				<img class="img" src="images/{{$value.Id}}.png" alt=""/>
+			<a href="alexandria.edit?id={{$value.ID}}">
+				<img class="img" src="images/{{$value.ID}}.png" alt=""/>
 			</a>
 			<div class="metadata">
 				{{ range $line := $value.SourceLines }}@source {{ $line }}<br>{{ end }}

@@ -100,8 +100,8 @@ type Scroll struct {
 // Results holds both the IDs of the first n scrolls matching a query, and the
 // number of matches.
 type Results struct {
-	Ids []Scroll
-	// How many results there were all in all; can be significantly larger than len(Ids).
+	IDs []Scroll
+	// How many results there were all in all; can be significantly larger than len(IDs).
 	Total int
 }
 
