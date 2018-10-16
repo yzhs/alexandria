@@ -38,8 +38,8 @@ const (
 // Generate a HTML file describing the size of the library.
 func printStats() string {
 	stats := alexandria.ComputeStatistics()
-	n := stats.Num()
-	size := float32(stats.Size()) / 1024.0
+	n := stats.NumberOfScrolls()
+	size := float32(stats.TotalSize()) / 1024.0
 	return fmt.Sprintf("The library contains %v scrolls with a total size of %.1f kiB.\n", n, size)
 }
 

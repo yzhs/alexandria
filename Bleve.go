@@ -145,7 +145,7 @@ func loadAndParseScrollContent(id string, file os.FileInfo) (Scroll, error) {
 	return scroll, err
 }
 
-func loadAndParseScrollContentByID(id Id) (Scroll, error) {
+func loadAndParseScrollContentByID(id ID) (Scroll, error) {
 	content, err := readScroll(id)
 	if err != nil {
 		return Scroll{}, err
@@ -156,7 +156,7 @@ func loadAndParseScrollContentByID(id Id) (Scroll, error) {
 
 // RemoveFromIndex removes a specified document from the index. This is
 // necessary as UpdateIndex has no way of knowing if a document was deleted.
-func RemoveFromIndex(id Id) error {
+func RemoveFromIndex(id ID) error {
 	index, err := openExistingIndex()
 	if err != nil {
 		return err
@@ -176,10 +176,10 @@ func FindScrolls(query string) (Results, error) {
 	ids := make([]Scroll, n)
 	i := 0
 	for _, id := range results.Ids {
-		if _, err := os.Stat(Config.KnowledgeDirectory + string(id.Id) + ".tex"); os.IsNotExist(err) {
+		if _, err := os.Stat(Config.KnowledgeDirectory + string(id.ID) + ".tex"); os.IsNotExist(err) {
 			continue
 		}
-		ids[i] = Scroll{Id: id.Id}
+		ids[i] = Scroll{ID: id.ID}
 		i++
 	}
 	results.Total = n // The number of hits can be wrong if scrolls have been deleted
@@ -245,7 +245,7 @@ func performQuery(index bleve.Index, newQueryString string) (*bleve.SearchResult
 func loadMatchingScrolls(searchResults *bleve.SearchResult) []Scroll {
 	var scrolls []Scroll
 	for _, match := range searchResults.Hits {
-		id := Id(match.ID)
+		id := ID(match.ID)
 		scroll, err := loadAndParseScrollContentByID(id)
 		if err != nil {
 			LogError(err)

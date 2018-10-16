@@ -113,7 +113,7 @@ func Parse(id, doc string) Scroll {
 	}
 	content := stripComments(doc)
 
-	return Scroll{Id: Id(id), Content: content, Type: scroll_type,
+	return Scroll{ID: ID(id), Content: content, Type: scroll_type,
 		SourceLines: source, Tags: tags, Hidden: hidden,
 		OtherLines: other_lines}
 }

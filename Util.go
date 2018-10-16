@@ -35,7 +35,7 @@ func TryLogError(err interface{}) {
 }
 
 // Load the content of a given scroll from disk.
-func readScroll(id Id) (string, error) {
+func readScroll(id ID) (string, error) {
 	result, err := ioutil.ReadFile(Config.KnowledgeDirectory + string(id) + ".tex")
 	return string(result), err
 }
@@ -48,7 +48,7 @@ func readTemplate(filename string) (string, error) {
 
 // Write a TeX file with the given name and content to Alexandria's temp
 // directory.
-func writeTemp(id Id, data string) error {
+func writeTemp(id ID, data string) error {
 	return ioutil.WriteFile(Config.TempDirectory+string(id)+".tex", []byte(data), 0644)
 }
 
@@ -98,7 +98,7 @@ var templateFiles []string = []string{
 	"theorem_header.tex", "theorem_footer.tex"}
 
 // Check whether a given scroll has to be recompiled
-func isUpToDate(id Id) bool {
+func isUpToDate(id ID) bool {
 	if templatesModTime == -1 {
 		// Check template for modification times
 		templatesModTime = 0

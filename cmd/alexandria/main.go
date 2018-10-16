@@ -30,8 +30,8 @@ import (
 
 func printStats() {
 	stats := alexandria.ComputeStatistics()
-	n := stats.Num()
-	size := float32(stats.Size()) / 1024.0
+	n := stats.NumberOfScrolls()
+	size := float32(stats.TotalSize()) / 1024.0
 	fmt.Printf("The library contains %v scrolls with a total size of %.1f kiB.\n", n, size)
 }
 
@@ -41,8 +41,8 @@ func renderMatchesForQuery(query string) {
 		panic(err)
 	}
 	fmt.Printf("There are %d matching scrolls.\n", len(results.Ids))
-	for _, id := range results.Ids {
-		fmt.Println("file://" + alexandria.Config.CacheDirectory + string(id.Id) + ".png")
+	for _, scroll := range results.Ids {
+		fmt.Println("file://" + alexandria.Config.CacheDirectory + string(scroll.ID) + ".png")
 	}
 }
 

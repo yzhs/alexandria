@@ -19,41 +19,49 @@ package alexandria
 
 import "os"
 
+// Programm name and version
 const (
 	NAME    = "Alexandria"
 	VERSION = "0.1"
 )
 
-// Statistics concerning the size of the library.
+// Stats contains the size of the library, in number of scrolls and in terms of
+// file size.
 type Stats struct {
-	num_scrolls int
-	file_size   int64
+	numScrolls int
+	fileSize   int64
 }
 
-func (s Stats) Num() int {
-	return s.num_scrolls
+// NumberOfScrolls returns the number of scrolls in the library.
+func (s Stats) NumberOfScrolls() int {
+	return s.numScrolls
 }
 
-func (s Stats) Size() int64 {
-	return s.file_size
+// TotalSize returns the total size of the files in the library.
+func (s Stats) TotalSize() int64 {
+	return s.fileSize
 }
 
-type Id string
+// ID holds UUID identifying a scroll.
+type ID string
 
+// Backend provides access to a full-text search system.
 type Backend interface {
-	Search(query []string) ([]Id, error)
+	Search(query []string) ([]ID, error)
 	GenerateIndex() error
 	ComputeStatistics() Statistics
 }
 
+// Renderer allows you to render a scroll of a certain file type.
 type Renderer interface {
 	Extension() string
-	Render(id Id) error
+	Render(id ID) error
 }
 
+// Statistics computes data about how large your library is.
 type Statistics interface {
-	Num() int
-	Size() int64
+	NumberOfScrolls() int
+	TotalSize() int64
 }
 
 // Configuration data of Alexandria
@@ -75,8 +83,9 @@ type Configuration struct {
 	TempDirectory       string
 }
 
+// Scroll contains all the data contained in a document.
 type Scroll struct {
-	Id          Id       `json:"id"`
+	ID          ID       `json:"id"`
 	Content     string   `json:"content"`
 	Type        string   `json:"type"`
 	SourceLines []string `json:"source"`
@@ -85,14 +94,18 @@ type Scroll struct {
 	OtherLines  []string `json:"other"`
 }
 
+// Results holds both the IDs of the first n scrolls matching a query, and the
+// number of matches.
 type Results struct {
 	Ids []Scroll
 	// How many results there were all in all; can be significantly larger than len(Ids).
 	Total int
 }
 
+// Config holds all the configuration of Alexandria.
 var Config Configuration
 
+// InitConfig initializes Config with reasonable default values.
 func InitConfig() {
 	Config.Quality = 90
 	Config.Dpi = 160
