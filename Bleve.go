@@ -19,6 +19,7 @@ package alexandria
 
 import (
 	"io/ioutil"
+	"log"
 	"os"
 	"strings"
 	"time"
@@ -28,11 +29,6 @@ import (
 	"github.com/blevesearch/bleve/analysis/analyzer/keyword"
 	"github.com/blevesearch/bleve/analysis/analyzer/simple"
 )
-
-func touch(file string) error {
-	now := time.Now()
-	return os.Chtimes(file, now, now)
-}
 
 // Add all documents to the index that have been created or modified since the
 // last time this function was executed.
@@ -47,14 +43,14 @@ func UpdateIndex() error {
 	defer index.Close()
 
 	indexUpdateFile := Config.AlexandriaDirectory + "index_updated"
-	indexUpdateTime, err := getModTime(indexUpdateFile)
-	if err != nil {
-		LogError(err)
-		return nil
-	}
-	// Save the time of this indexing operation
-	err = touch(indexUpdateFile)
+	timeOfLastIndexUpdate, err := getModTime(indexUpdateFile)
+	// If an error occurs, we just log it. In that case,
+	// timeOfLastIndexUpdate will contain 0, i.e. 1970-01-01. The entire
+	// purpose of the `index_updated` file is to reduce the number of
+	// documents we reindex. Therefore, the worst case scenario when
+	// getModTime fails is that we do some redundant work.
 	TryLogError(err)
+	recordIndexUpdateStart(indexUpdateFile)
 
 	files, err := ioutil.ReadDir(Config.KnowledgeDirectory)
 	if err != nil {
@@ -63,25 +59,37 @@ func UpdateIndex() error {
 
 	batch := index.NewBatch()
 	for _, file := range files {
-		if !isNewIndex && isOlderThan(file, indexUpdateTime) {
+		if !isNewIndex && isOlderThan(file, timeOfLastIndexUpdate) {
 			continue
 		}
 
 		id := strings.TrimSuffix(file.Name(), ".tex")
 		scroll, err := loadAndParseScrollContent(id, file)
-		if err == nil {
-			batch.Index(id, scroll)
+		if err != nil {
+			LogError(err)
+			continue
 		}
+		batch.Index(id, scroll)
 	}
 	index.Batch(batch)
 
 	return nil
 }
 
+func recordIndexUpdateStart(indexUpdateFile string) {
+	err := touch(indexUpdateFile)
+	TryLogError(err)
+}
+
+func touch(file string) error {
+	now := time.Now()
+	return os.Chtimes(file, now, now)
+}
+
 func openOrCreateIndex() (bleve.Index, bool, error) {
 	isNewIndex := false
 
-	index, err := openIndex()
+	index, err := openExistingIndex()
 	if err != nil {
 		index, err = createNewIndex()
 		isNewIndex = true
@@ -90,7 +98,7 @@ func openOrCreateIndex() (bleve.Index, bool, error) {
 	return index, isNewIndex, err
 }
 
-func openIndex() (bleve.Index, error) {
+func openExistingIndex() (bleve.Index, error) {
 	return bleve.Open(Config.AlexandriaDirectory + "bleve")
 }
 
@@ -138,10 +146,19 @@ func loadAndParseScrollContent(id string, file os.FileInfo) (Scroll, error) {
 	return scroll, err
 }
 
+func loadAndParseScrollContentById(id Id) (Scroll, error) {
+	content, err := readScroll(id)
+	if err != nil {
+		return Scroll{}, err
+	}
+	scroll := Parse(string(id), content)
+	return scroll, nil
+}
+
 // Remove the specified document from the index. This is necessary as
 // `UpdateIndex` has no way of knowing if a document was deleted.
 func RemoveFromIndex(id Id) error {
-	index, err := openIndex()
+	index, err := openExistingIndex()
 	if err != nil {
 		return err
 	}
@@ -172,13 +189,38 @@ func FindScrolls(query string) (Results, error) {
 }
 
 func searchBleve(queryString string) (Results, error) {
-	index, err := openIndex()
+	index, err := openExistingIndex()
 	if err != nil {
 		LogError(err)
 		return Results{}, err
 	}
 	defer index.Close()
 
+	newQueryString := translatePlusMinusTildePrefixes(queryString)
+	searchResults, err := performQuery(index, newQueryString)
+	if err != nil {
+		if err.Error() == "syntax error" {
+			log.Printf("Invalid query string: '%v'", newQueryString)
+			err = nil
+		}
+		return Results{}, err
+	}
+
+	scrolls := loadMatchingScrolls(searchResults)
+
+	return Results{scrolls[:len(searchResults.Hits)], int(searchResults.Total)}, nil
+}
+
+// Bleve's query language allows terms with different prefixes.  Terms starting
+// with a + are required, terms starting with a - are not allowed.  Without
+// either of these prefixes, Bleve will also find documents that do *not*
+// contain this term.
+//
+// In general, I want most terms to be prefixed with a +, but not type a plus
+// in front of every term.  Therefore, Alexandria's query language
+// automatically adds a plus in front of terms that have neither a plus nor
+// minus prefix.  To make a term optional, it can be prefixed with a ~.
+func translatePlusMinusTildePrefixes(queryString string) string {
 	newQueryString := ""
 	for _, tmp := range strings.Split(queryString, " ") {
 		word := strings.TrimSpace(tmp)
@@ -191,31 +233,33 @@ func searchBleve(queryString string) (Results, error) {
 			newQueryString += " +" + word
 		}
 	}
+	return newQueryString[1:] // Remove leading space
+}
 
-	query := bleve.NewQueryStringQuery(newQueryString[1:]) // Remove leading space
+func performQuery(index bleve.Index, newQueryString string) (*bleve.SearchResult, error) {
+	query := bleve.NewQueryStringQuery(newQueryString)
 	search := bleve.NewSearchRequest(query)
 	search.Size = Config.MaxResults
-	searchResults, err := index.Search(search)
-	if err != nil {
-		println("Invalid query string: '" + newQueryString[1:] + "'")
-		LogError(err)
-		return Results{}, err
-	}
+	return index.Search(search)
+}
 
-	var ids []Scroll
+func loadMatchingScrolls(searchResults *bleve.SearchResult) []Scroll {
+	var scrolls []Scroll
 	for _, match := range searchResults.Hits {
 		id := Id(match.ID)
-		content, err := readScroll(id)
-		TryLogError(err)
-		scroll := Parse(string(id), content)
-		ids = append(ids, scroll)
+		scroll, err := loadAndParseScrollContentById(id)
+		if err != nil {
+			LogError(err)
+			continue
+		}
+		scrolls = append(scrolls, scroll)
 	}
 
-	return Results{ids[:len(searchResults.Hits)], int(searchResults.Total)}, nil
+	return scrolls
 }
 
 func ComputeStatistics() Statistics {
-	index, err := openIndex()
+	index, err := openExistingIndex()
 	if err != nil {
 		LogError(err)
 	}

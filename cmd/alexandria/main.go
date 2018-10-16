@@ -68,7 +68,7 @@ func main() {
 
 	switch {
 	case index:
-		alexandria.GenerateIndex()
+		alexandria.UpdateIndex()
 	case stats:
 		printStats()
 	case version:
