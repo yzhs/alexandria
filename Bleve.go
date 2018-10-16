@@ -69,11 +69,12 @@ func UpdateIndex() error {
 			LogError(err)
 			continue
 		}
-		batch.Index(id, scroll)
+		err = batch.Index(id, scroll)
+		if err != nil {
+			LogError(err)
+		}
 	}
-	index.Batch(batch)
-
-	return nil
+	return index.Batch(batch)
 }
 
 func recordIndexUpdateStart(indexUpdateFile string) {
