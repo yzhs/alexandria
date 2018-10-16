@@ -135,12 +135,12 @@ func main() {
 		defer pprof.StopCPUProfile()
 	}
 
-	// TODO run GenerateIndex() when there is something new
-
 	if version {
 		fmt.Println(alexandria.NAME, alexandria.VERSION)
 		return
 	}
+
+	alexandria.UpdateIndex()
 
 	http.HandleFunc("/", mainHandler)
 	http.HandleFunc("/stats", statsHandler)
