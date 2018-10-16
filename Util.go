@@ -23,11 +23,12 @@ import (
 	"os"
 )
 
+// LogError writes things to stderr.
 func LogError(err interface{}) {
 	fmt.Fprintln(os.Stderr, err)
 }
 
-// If an error occurred, log it.
+// TryLogError checks whether an error occurred, and logs it if necessary.
 func TryLogError(err interface{}) {
 	if err != nil {
 		LogError(err)
@@ -83,7 +84,7 @@ var templatesModTime int64 = -1
 
 // All recognized template files
 // TODO Generate the list⁈
-var templateFiles []string = []string{
+var templateFiles = []string{
 	"header.tex", "footer.tex",
 	"algorithm_header.tex", "algorithm_footer.tex",
 	"axiom_header.tex", "axiom_footer.tex",
