@@ -78,7 +78,7 @@ func main() {
 		fmt.Println(alexandria.NAME, alexandria.VERSION)
 	case len(os.Args) == 0:
 		println("Nothing to do")
-	case os.Args[1] == "all":
+	case len(os.Args) == 2 && os.Args[1] == "all":
 		var x alexandria.XelatexImagemagickRenderer
 		fmt.Printf("Rendered all %d scrolls.\n", alexandria.RenderAllScrolls(x))
 		os.Exit(0)
