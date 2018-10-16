@@ -30,8 +30,8 @@ import (
 	"github.com/blevesearch/bleve/analysis/analyzer/simple"
 )
 
-// Add all documents to the index that have been created or modified since the
-// last time this function was executed.
+// UpdateIndex adds all documents to the index that have been created or
+// modified since the last time this function was executed.
 //
 // Note that this function does *not* remove deleted documents from the index.
 // See `RemoveFromIndex`.
@@ -133,9 +133,8 @@ func isOlderThan(file os.FileInfo, indexUpdateTime int64) bool {
 	if err != nil {
 		LogError(err)
 		return true
-	} else {
-		return modTime < indexUpdateTime
 	}
+	return modTime < indexUpdateTime
 }
 
 func loadAndParseScrollContent(id string, file os.FileInfo) (Scroll, error) {
@@ -146,7 +145,7 @@ func loadAndParseScrollContent(id string, file os.FileInfo) (Scroll, error) {
 	return scroll, err
 }
 
-func loadAndParseScrollContentById(id Id) (Scroll, error) {
+func loadAndParseScrollContentByID(id Id) (Scroll, error) {
 	content, err := readScroll(id)
 	if err != nil {
 		return Scroll{}, err
@@ -155,8 +154,8 @@ func loadAndParseScrollContentById(id Id) (Scroll, error) {
 	return scroll, nil
 }
 
-// Remove the specified document from the index. This is necessary as
-// `UpdateIndex` has no way of knowing if a document was deleted.
+// RemoveFromIndex removes a specified document from the index. This is
+// necessary as UpdateIndex has no way of knowing if a document was deleted.
 func RemoveFromIndex(id Id) error {
 	index, err := openExistingIndex()
 	if err != nil {
@@ -166,7 +165,7 @@ func RemoveFromIndex(id Id) error {
 	return index.Delete(string(id))
 }
 
-// Get a list of scrolls matching the query.
+// FindScrolls computes a list of scrolls matching the query.
 func FindScrolls(query string) (Results, error) {
 	results, err := searchBleve(query)
 	if err != nil {
@@ -181,7 +180,7 @@ func FindScrolls(query string) (Results, error) {
 			continue
 		}
 		ids[i] = Scroll{Id: id.Id}
-		i += 1
+		i++
 	}
 	results.Total = n // The number of hits can be wrong if scrolls have been deleted
 
@@ -247,7 +246,7 @@ func loadMatchingScrolls(searchResults *bleve.SearchResult) []Scroll {
 	var scrolls []Scroll
 	for _, match := range searchResults.Hits {
 		id := Id(match.ID)
-		scroll, err := loadAndParseScrollContentById(id)
+		scroll, err := loadAndParseScrollContentByID(id)
 		if err != nil {
 			LogError(err)
 			continue
@@ -258,6 +257,8 @@ func loadMatchingScrolls(searchResults *bleve.SearchResult) []Scroll {
 	return scrolls
 }
 
+// ComputeStatistics counts the number of scrolls in the library and computes
+// their combined size.
 func ComputeStatistics() Statistics {
 	index, err := openExistingIndex()
 	if err != nil {
