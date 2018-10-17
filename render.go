@@ -51,8 +51,8 @@ func (e *errTemplateReader) readTemplate(name string) {
 	e.doc += tmp
 }
 
-// RenderBackend describes a LaTeX->PDF->PNG pipeline.
-type RenderBackend interface {
+// LatexToPngRenderer describes a LaTeX->PDF->PNG pipeline.
+type LatexToPngRenderer interface {
 	// Create a LaTeX file from the content of the given scroll together
 	// with all the appropriate templates.  The resulting file stored in
 	// the temp directory.
@@ -143,7 +143,7 @@ func (x XelatexImagemagickRenderer) err() error {
 }
 
 // Generate a PNG image from a given scroll, if there is no up-to-date image.
-func renderScroll(id ID, renderer RenderBackend) error {
+func RenderScroll(id ID, renderer LatexToPngRenderer) error {
 	if isUpToDate(id) {
 		return nil
 	}
@@ -158,12 +158,12 @@ func renderScroll(id ID, renderer RenderBackend) error {
 
 // RenderListOfScrolls takes a list of scroll IDs and passes them to the given
 // rendering backend.
-func RenderListOfScrolls(ids []Scroll, renderer RenderBackend) int {
+func RenderListOfScrolls(ids []Scroll, renderer LatexToPngRenderer) int {
 	numScrolls := 0
 
 	for _, foo := range ids {
 		id := foo.ID
-		err := renderScroll(id, renderer)
+		err := RenderScroll(id, renderer)
 		if err != nil {
 			if err == ErrNoSuchScroll {
 				continue
@@ -181,7 +181,7 @@ func RenderListOfScrolls(ids []Scroll, renderer RenderBackend) int {
 // RenderAllScrolls goes through the library directory and renders every
 // available scroll.  This allows us to perform all the expensive LaTeX-to-PDF
 // conversions ahead-of-time, so queries can be answered more quickly.
-func RenderAllScrolls(renderer RenderBackend) int {
+func RenderAllScrolls(renderer LatexToPngRenderer) int {
 	files, err := ioutil.ReadDir(Config.KnowledgeDirectory)
 	if err != nil {
 		panic(err)
@@ -200,7 +200,7 @@ func RenderAllScrolls(renderer RenderBackend) int {
 				return
 			}
 			id := ID(strings.TrimSuffix(file.Name(), ".tex"))
-			if err := renderScroll(id, renderer); err != nil && err != ErrNoSuchScroll {
+			if err := RenderScroll(id, renderer); err != nil && err != ErrNoSuchScroll {
 				log.Printf("%s\nERROR\n%s\n%v\n%s\n", hashes, hashes, err, hashes)
 			}
 			ch <- 1

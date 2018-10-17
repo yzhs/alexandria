@@ -45,13 +45,6 @@ func (s Stats) TotalSize() int64 {
 // ID holds UUID identifying a scroll.
 type ID string
 
-// Backend provides access to a full-text search system.
-type Backend interface {
-	Search(query []string) ([]ID, error)
-	GenerateIndex() error
-	ComputeStatistics() (Statistics, error)
-}
-
 // Renderer allows you to render a scroll of a certain file type.
 type Renderer interface {
 	Extension() string
