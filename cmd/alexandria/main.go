@@ -58,21 +58,24 @@ func main() {
 	case version:
 		fmt.Println(alexandria.NAME, alexandria.VERSION)
 	case len(os.Args) <= 1:
-		println("Nothing to do")
+		fmt.Fprintln(os.Stderr, "Nothing to do")
 	case len(os.Args) == 2 && os.Args[1] == "all":
-		numScrolls, errors := b.RenderAllScrolls()
-		fmt.Printf("Rendered all %d scrolls.\n", numScrolls)
-		if len(errors) != 0 {
-			printErrors(errors)
-			os.Exit(1)
-		}
-
+		renderEverything(b)
 	default:
 		i := 1
 		if os.Args[1] == "--" {
-			i += 1
+			i++
 		}
 		renderMatchesForQuery(b, strings.Join(os.Args[i:], " "))
+	}
+}
+
+func renderEverything(b alexandria.Backend) {
+	numScrolls, errors := b.RenderAllScrolls()
+	fmt.Printf("Rendered all %d scrolls.\n", numScrolls)
+	if len(errors) != 0 {
+		printErrors(errors)
+		os.Exit(1)
 	}
 }
 
