@@ -38,8 +38,9 @@ form.input-group {
 }
 
 .scroll-content {
-	text-indent: -99999px;
 	position: absolute;
+	color: #fff;
+	z-index: -1;
 }
 
 .metadata {
