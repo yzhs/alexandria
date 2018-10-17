@@ -267,17 +267,15 @@ func ComputeStatistics() (Statistics, error) {
 	}
 	defer index.Close()
 
-	num, size, err := getDirSize(Config.KnowledgeDirectory)
+	_, size, err := getDirSize(Config.KnowledgeDirectory)
 	if err != nil {
 		return Stats{}, errors.Wrap(err, "get size of library directory")
 	}
 
-	tmp, err := index.DocCount()
+	num, err := index.DocCount()
 	if err != nil {
 		return Stats{}, errors.Wrap(err, "get number of scrolls in the index")
-	} else {
-		num = int(tmp)
 	}
 
-	return Stats{num, size}, nil
+	return Stats{int(num), size}, nil
 }

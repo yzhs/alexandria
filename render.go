@@ -142,7 +142,8 @@ func (x XelatexImagemagickRenderer) err() error {
 	return x.error
 }
 
-// Generate a PNG image from a given scroll, if there is no up-to-date image.
+// RenderScroll takes a scroll ID and a renderer to create a PNG image from
+// that scroll.
 func RenderScroll(id ID, renderer LatexToPngRenderer) error {
 	if isUpToDate(id) {
 		return nil
