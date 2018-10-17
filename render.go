@@ -51,8 +51,8 @@ func (e *errTemplateReader) readTemplate(name string) {
 	e.doc += tmp
 }
 
-// LatexToPngRenderer describes a LaTeX->PDF->PNG pipeline.
-type LatexToPngRenderer interface {
+// latexToPngRenderer describes a LaTeX->PDF->PNG pipeline.
+type latexToPngRenderer interface {
 	// Create a LaTeX file from the content of the given scroll together
 	// with all the appropriate templates.  The resulting file stored in
 	// the temp directory.
@@ -72,21 +72,21 @@ type LatexToPngRenderer interface {
 	err() error
 }
 
-// XelatexImagemagickRenderer uses xelatex to handle the LaTeX-to-PDF
+// xelatexImagemagickRenderer uses xelatex to handle the LaTeX-to-PDF
 // translation, ImageMagick to convert the PDF to a PNG.
-type XelatexImagemagickRenderer struct {
+type xelatexImagemagickRenderer struct {
 	error error
 }
 
-func (x XelatexImagemagickRenderer) scrollToLatex(id ID) {
+func (x xelatexImagemagickRenderer) scrollToLatex(id ID) {
 	var e errTemplateReader
 
 	scrollText, err := readScroll(id)
 	if err != nil {
 		if os.IsNotExist(err) {
-			err = RemoveFromIndex(id)
+			err = removeFromIndex(id)
 			if err != nil {
-				LogError(err)
+				logError(err)
 			}
 			x.error = ErrNoSuchScroll
 			return
@@ -94,7 +94,7 @@ func (x XelatexImagemagickRenderer) scrollToLatex(id ID) {
 		x.error = err
 		return
 	}
-	scroll := Parse(string(id), scrollText)
+	scroll := parse(string(id), scrollText)
 
 	e.readTemplate("header")
 	e.readTemplate(scroll.Type + "_header")
@@ -110,7 +110,7 @@ func (x XelatexImagemagickRenderer) scrollToLatex(id ID) {
 	x.error = errors.Wrapf(err, "writing latex file %v.tex to temporary directory", id)
 }
 
-func (x XelatexImagemagickRenderer) latexToPdf(id ID) {
+func (x xelatexImagemagickRenderer) latexToPdf(id ID) {
 	if x.error != nil {
 		return
 	}
@@ -121,7 +121,7 @@ func (x XelatexImagemagickRenderer) latexToPdf(id ID) {
 	x.error = errors.Wrapf(err, "XeLaTeX build: %v", msg)
 }
 
-func (x XelatexImagemagickRenderer) pdfToPng(i ID) {
+func (x xelatexImagemagickRenderer) pdfToPng(i ID) {
 	if x.error != nil {
 		return
 	}
@@ -134,17 +134,17 @@ func (x XelatexImagemagickRenderer) pdfToPng(i ID) {
 
 }
 
-func (x XelatexImagemagickRenderer) deleteTemporaryFiles(id ID) {
+func (x xelatexImagemagickRenderer) deleteTemporaryFiles(id ID) {
 	// TODO delete Config.TempDirectory + id + ".*"
 }
 
-func (x XelatexImagemagickRenderer) err() error {
+func (x xelatexImagemagickRenderer) err() error {
 	return x.error
 }
 
-// RenderScroll takes a scroll ID and a renderer to create a PNG image from
+// renderScroll takes a scroll ID and a renderer to create a PNG image from
 // that scroll.
-func RenderScroll(id ID, renderer LatexToPngRenderer) error {
+func renderScroll(id ID, renderer latexToPngRenderer) error {
 	if isUpToDate(id) {
 		return nil
 	}
@@ -157,14 +157,14 @@ func RenderScroll(id ID, renderer LatexToPngRenderer) error {
 	return errors.Wrap(renderer.err(), "rendering")
 }
 
-// RenderListOfScrolls takes a list of scroll IDs and passes them to the given
+// renderListOfScrolls takes a list of scroll IDs and passes them to the given
 // rendering backend.
-func RenderListOfScrolls(ids []Scroll, renderer LatexToPngRenderer) int {
+func renderListOfScrolls(ids []Scroll, renderer latexToPngRenderer) int {
 	numScrolls := 0
 
 	for _, foo := range ids {
 		id := foo.ID
-		err := RenderScroll(id, renderer)
+		err := renderScroll(id, renderer)
 		if err != nil {
 			if err == ErrNoSuchScroll {
 				continue
@@ -179,10 +179,10 @@ func RenderListOfScrolls(ids []Scroll, renderer LatexToPngRenderer) int {
 	return numScrolls
 }
 
-// RenderAllScrolls goes through the library directory and renders every
+// renderAllScrolls goes through the library directory and renders every
 // available scroll.  This allows us to perform all the expensive LaTeX-to-PDF
 // conversions ahead-of-time, so queries can be answered more quickly.
-func RenderAllScrolls(renderer LatexToPngRenderer) int {
+func renderAllScrolls(renderer latexToPngRenderer) int {
 	files, err := ioutil.ReadDir(Config.KnowledgeDirectory)
 	if err != nil {
 		panic(err)
@@ -201,7 +201,7 @@ func RenderAllScrolls(renderer LatexToPngRenderer) int {
 				return
 			}
 			id := ID(strings.TrimSuffix(file.Name(), ".tex"))
-			if err := RenderScroll(id, renderer); err != nil && err != ErrNoSuchScroll {
+			if err := renderScroll(id, renderer); err != nil && err != ErrNoSuchScroll {
 				log.Printf("%s\nERROR\n%s\n%v\n%s\n", hashes, hashes, err, hashes)
 			}
 			ch <- 1

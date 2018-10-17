@@ -74,7 +74,7 @@ func parseTags(line string) []string {
 // 'counter-example', 'analysis', 'topology' and 'weierstraß'.  It can be found
 // in Author: Title as Lemma 3.2 on pase 41.  All the metadata is stored in the
 // final block of LaTeX comments.  Also, we simply ignore any empty lines.
-func Parse(id, doc string) Scroll {
+func parse(id, doc string) Scroll {
 	// TODO Handle different types of tags: @source, @doctype, @keywords, and normal tags.
 	var source []string
 	var hidden []string

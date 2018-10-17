@@ -35,7 +35,7 @@ import (
 //
 // Note that this function does *not* remove deleted documents from the index.
 // See `RemoveFromIndex`.
-func UpdateIndex() error {
+func updateIndex() error {
 	index, isNewIndex, err := openOrCreateIndex()
 	if err != nil {
 		return errors.Wrap(err, "open or create index")
@@ -49,7 +49,7 @@ func UpdateIndex() error {
 	// purpose of the `index_updated` file is to reduce the number of
 	// documents we reindex. Therefore, the worst case scenario when
 	// getModTime fails is that we do some redundant work.
-	TryLogError(err)
+	tryLogError(err)
 	recordIndexUpdateStart(indexUpdateFile)
 
 	files, err := ioutil.ReadDir(Config.KnowledgeDirectory)
@@ -66,12 +66,12 @@ func UpdateIndex() error {
 		id := strings.TrimSuffix(file.Name(), ".tex")
 		scroll, err := loadAndParseScrollContent(id, file)
 		if err != nil {
-			LogError(err)
+			logError(err)
 			continue
 		}
 		err = batch.Index(id, scroll)
 		if err != nil {
-			LogError(err)
+			logError(err)
 		}
 	}
 	return index.Batch(batch)
@@ -79,7 +79,7 @@ func UpdateIndex() error {
 
 func recordIndexUpdateStart(indexUpdateFile string) {
 	err := touch(indexUpdateFile)
-	TryLogError(err)
+	tryLogError(err)
 }
 
 func touch(file string) error {
@@ -132,7 +132,7 @@ func createNewIndex() (bleve.Index, error) {
 func isOlderThan(file os.FileInfo, indexUpdateTime int64) bool {
 	modTime, err := getModTime(Config.KnowledgeDirectory + file.Name())
 	if err != nil {
-		LogError(err)
+		logError(err)
 		return true
 	}
 	return modTime < indexUpdateTime
@@ -140,9 +140,9 @@ func isOlderThan(file os.FileInfo, indexUpdateTime int64) bool {
 
 func loadAndParseScrollContent(id string, file os.FileInfo) (Scroll, error) {
 	contentBytes, err := ioutil.ReadFile(Config.KnowledgeDirectory + file.Name())
-	TryLogError(err)
+	tryLogError(err)
 	content := string(contentBytes)
-	scroll := Parse(id, content)
+	scroll := parse(id, content)
 	return scroll, err
 }
 
@@ -151,13 +151,13 @@ func loadAndParseScrollContentByID(id ID) (Scroll, error) {
 	if err != nil {
 		return Scroll{}, err
 	}
-	scroll := Parse(string(id), content)
+	scroll := parse(string(id), content)
 	return scroll, nil
 }
 
 // RemoveFromIndex removes a specified document from the index. This is
 // necessary as UpdateIndex has no way of knowing if a document was deleted.
-func RemoveFromIndex(id ID) error {
+func removeFromIndex(id ID) error {
 	index, err := openExistingIndex()
 	if err != nil {
 		return err
@@ -167,13 +167,13 @@ func RemoveFromIndex(id ID) error {
 }
 
 // FindScrolls computes a list of scrolls matching the query.
-func FindScrolls(query string) (Results, error) {
+func findScrolls(query string) (Results, error) {
 	results, err := searchBleve(query)
 	if err != nil {
 		return Results{}, err
 	}
-	var x XelatexImagemagickRenderer
-	n := RenderListOfScrolls(results.IDs, x)
+	var x xelatexImagemagickRenderer
+	n := renderListOfScrolls(results.IDs, x)
 	ids := make([]Scroll, n)
 	i := 0
 	for _, id := range results.IDs {
@@ -191,7 +191,7 @@ func FindScrolls(query string) (Results, error) {
 func searchBleve(queryString string) (Results, error) {
 	index, err := openExistingIndex()
 	if err != nil {
-		LogError(err)
+		logError(err)
 		return Results{}, err
 	}
 	defer index.Close()
@@ -249,7 +249,7 @@ func loadMatchingScrolls(searchResults *bleve.SearchResult) []Scroll {
 		id := ID(match.ID)
 		scroll, err := loadAndParseScrollContentByID(id)
 		if err != nil {
-			LogError(err)
+			logError(err)
 			continue
 		}
 		scrolls = append(scrolls, scroll)
@@ -258,9 +258,9 @@ func loadMatchingScrolls(searchResults *bleve.SearchResult) []Scroll {
 	return scrolls
 }
 
-// ComputeStatistics counts the number of scrolls in the library and computes
+// computeStatistics counts the number of scrolls in the library and computes
 // their combined size.
-func ComputeStatistics() (Statistics, error) {
+func computeStatistics() (Statistics, error) {
 	index, err := openExistingIndex()
 	if err != nil {
 		return Stats{}, errors.Wrap(err, "open existing index")

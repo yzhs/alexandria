@@ -25,15 +25,15 @@ import (
 	"github.com/pkg/errors"
 )
 
-// LogError writes things to stderr.
-func LogError(err interface{}) {
+// logError writes things to stderr.
+func logError(err interface{}) {
 	fmt.Fprintf(os.Stderr, "%+v\n", err)
 }
 
-// TryLogError checks whether an error occurred, and logs it if necessary.
-func TryLogError(err interface{}) {
+// tryLogError checks whether an error occurred, and logs it if necessary.
+func tryLogError(err interface{}) {
 	if err != nil {
-		LogError(err)
+		logError(err)
 	}
 }
 
@@ -59,7 +59,7 @@ func writeTemp(id ID, data string) error {
 // Compute the combined size of all files in a given directory.
 func getDirSize(dir string) (int, int64, error) {
 	directory, err := os.Open(dir)
-	TryLogError(err)
+	tryLogError(err)
 	defer directory.Close()
 	fileInfo, err := directory.Readdir(0)
 	if err != nil {
