@@ -24,7 +24,6 @@ func main() {
 	flag.BoolVar(&profile, "profile", false, "\tEnable profiler")
 	flag.Parse()
 
-	alexandria.InitConfig()
 	alexandria.Config.MaxResults = 1e9
 
 	if profile {

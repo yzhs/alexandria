@@ -116,8 +116,6 @@ func serveDirectory(prefix string, directory string) {
 	http.Handle(prefix, http.StripPrefix(prefix, http.FileServer(http.Dir(directory))))
 }
 
-var resultTemplate *template.Template
-
 // Load gets a parsed template.Template, whether from cache or from disk.
 func loadTemplate(name string) *template.Template {
 	path := alexandria.Config.TemplateDirectory + "html/" + name + ".html"
@@ -128,13 +126,14 @@ func loadTemplate(name string) *template.Template {
 	return template
 }
 
+var resultTemplate = loadTemplate("search")
+
 func main() {
 	var profile, version bool
 	flag.BoolVarP(&version, "version", "v", false, "\tShow version")
 	flag.BoolVar(&profile, "profile", false, "\tEnable profiler")
 	flag.Parse()
 
-	alexandria.InitConfig()
 	alexandria.Config.MaxResults = MAX_RESULTS
 
 	if profile {
@@ -153,7 +152,6 @@ func main() {
 
 	b := alexandria.NewBackend()
 	b.UpdateIndex()
-	resultTemplate = loadTemplate("search")
 
 	http.HandleFunc("/", mainHandler)
 	http.HandleFunc("/stats", statsHandler(b))

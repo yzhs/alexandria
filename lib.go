@@ -112,20 +112,23 @@ func (b *Backend) LoadScrolls(ids []ID) ([]Scroll, error) {
 }
 
 // Config holds all the configuration of Alexandria.
-var Config Configuration
+var Config = initConfig()
 
-// InitConfig initializes Config with reasonable default values.
-func InitConfig() {
-	Config.Quality = 90
-	Config.Dpi = 160
-	Config.MaxResults = 1000
-	Config.MaxProcs = 4
+func initConfig() Configuration {
+	var config Configuration
+
+	config.Quality = 90
+	config.Dpi = 160
+	config.MaxResults = 1000
+	config.MaxProcs = 4
 
 	dir := os.Getenv("HOME") + "/.alexandria/"
 
-	Config.AlexandriaDirectory = dir
-	Config.KnowledgeDirectory = dir + "library/"
-	Config.CacheDirectory = dir + "cache/"
-	Config.TemplateDirectory = dir + "templates/"
-	Config.TempDirectory = dir + "tmp/"
+	config.AlexandriaDirectory = dir
+	config.KnowledgeDirectory = dir + "library/"
+	config.CacheDirectory = dir + "cache/"
+	config.TemplateDirectory = dir + "templates/"
+	config.TempDirectory = dir + "tmp/"
+
+	return config
 }
