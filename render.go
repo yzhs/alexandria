@@ -62,7 +62,7 @@ type xelatexImagemagickRenderer struct {
 	error error
 }
 
-func (x xelatexImagemagickRenderer) scrollToLatex(id ID) {
+func (x *xelatexImagemagickRenderer) scrollToLatex(id ID) {
 	var e errTemplateReader
 
 	scrollText, err := readScroll(id)
@@ -94,18 +94,18 @@ func (x xelatexImagemagickRenderer) scrollToLatex(id ID) {
 	x.error = errors.Wrapf(err, "writing latex file %v.tex to temporary directory", id)
 }
 
-func (x xelatexImagemagickRenderer) latexToPdf(id ID) {
+func (x *xelatexImagemagickRenderer) latexToPdf(id ID) {
 	if x.error != nil {
 		return
 	}
 
-	msg, err := exec.Command("xelatex", "-interaction", "nonstopmode",
-		"-output-directory", Config.TempDirectory,
+	msg, err := exec.Command("xelatex",
+		"-halt-on-error", "-output-directory", Config.TempDirectory,
 		Config.TempDirectory+string(id)).CombinedOutput()
-	x.error = errors.Wrapf(err, "XeLaTeX build: %v", msg)
+	x.error = errors.Wrapf(err, "XeLaTeX build: %v", string(msg))
 }
 
-func (x xelatexImagemagickRenderer) pdfToPng(i ID) {
+func (x *xelatexImagemagickRenderer) pdfToPng(i ID) {
 	if x.error != nil {
 		return
 	}
@@ -118,7 +118,11 @@ func (x xelatexImagemagickRenderer) pdfToPng(i ID) {
 
 }
 
-func (x xelatexImagemagickRenderer) deleteTemporaryFiles(id ID) {
+func (x *xelatexImagemagickRenderer) deleteTemporaryFiles(id ID) {
+	if x.error != nil {
+		return
+	}
+
 	files, err := filepath.Glob(Config.TempDirectory + string(id) + ".*")
 	if err != nil {
 		logError(err)
@@ -129,7 +133,7 @@ func (x xelatexImagemagickRenderer) deleteTemporaryFiles(id ID) {
 	}
 }
 
-func (x xelatexImagemagickRenderer) err() error {
+func (x *xelatexImagemagickRenderer) err() error {
 	return x.error
 }
 
@@ -143,6 +147,7 @@ func renderScroll(id ID, renderer latexToPngRenderer) error {
 	renderer.scrollToLatex(id)
 	renderer.latexToPdf(id)
 	renderer.pdfToPng(id)
+	tryLogError(renderer.err())
 	renderer.deleteTemporaryFiles(id)
 
 	return errors.Wrap(renderer.err(), "rendering")

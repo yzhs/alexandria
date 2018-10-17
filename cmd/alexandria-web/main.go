@@ -100,7 +100,7 @@ func queryHandler(b alexandria.Backend) func(http.ResponseWriter, *http.Request)
 			errorStrings := make([]string, len(errors))
 			for i, err := range errors {
 				errorStrings[i] = err.Error()
-				fmt.Fprintf(os.Stderr, "%v;\n", err.Error())
+				fmt.Fprintf(os.Stderr, "%v;\n", errorStrings[i])
 			}
 			http.Error(w, strings.Join(errorStrings, ";\n"), http.StatusInternalServerError)
 			return

@@ -19,7 +19,7 @@ type Backend struct {
 }
 
 func NewBackend() Backend {
-	return Backend{renderer: xelatexImagemagickRenderer{}}
+	return Backend{renderer: &xelatexImagemagickRenderer{}}
 }
 
 func (b *Backend) RenderAllScrolls() (numScrolls int, errors []error) {
