@@ -17,7 +17,11 @@ type CompiledTemplates struct {
 var Templates CompiledTemplates
 
 // Load gets a parsed template.Template, whether from cache or from disk.
-func (templates CompiledTemplates) Load(typ, name string) *template.Template {
+func (templates CompiledTemplates) Load(name, typ string) *template.Template {
+	if templates.cache == nil {
+		templates.cache = make(map[string]*template.Template)
+	}
+
 	fullName := name + "." + typ
 	template, ok := templates.cache[fullName]
 	if ok {
