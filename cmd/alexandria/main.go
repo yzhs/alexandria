@@ -90,7 +90,7 @@ func printStats(b alexandria.Backend) {
 }
 
 func renderMatchesForQuery(b alexandria.Backend, query string) {
-	ids, err := b.FindMatchingScrolls(query)
+	ids, _, err := b.FindMatchingScrolls(query)
 	if err != nil {
 		panic(err)
 	}

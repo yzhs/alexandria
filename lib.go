@@ -55,22 +55,23 @@ func (b *Backend) RenderScrollsByID(ids []ID) (renderedScrollIDs []ID, errors []
 	return renderedScrollIDs[:numScrolls], errors
 }
 
-func (b *Backend) FindMatchingScrolls(query string) ([]ID, error) {
+func (b *Backend) FindMatchingScrolls(query string) ([]ID, int, error) {
 	index, err := openExistingIndex()
 	if err != nil {
-		return []ID{}, err
+		return []ID{}, 0, err
 	}
 	defer index.Close()
 
 	newQuery := translatePlusMinusTildePrefixes(query)
 	searchResults, err := performQuery(index, newQuery)
+	totalMatches := int(searchResults.Total)
 	if err != nil {
 		if err.Error() == "syntax error" {
 			err = errors.Wrapf(err, "invalid query string: '%v'", newQuery)
 		} else {
 			err = errors.Wrap(err, "perform query")
 		}
-		return []ID{}, err
+		return []ID{}, totalMatches, err
 	}
 
 	var ids []ID
@@ -79,7 +80,7 @@ func (b *Backend) FindMatchingScrolls(query string) ([]ID, error) {
 		ids = append(ids, id)
 	}
 
-	return ids, nil
+	return ids, totalMatches, nil
 }
 
 // IDsForAllScrolls goes through the library directory and creates a list of
@@ -107,4 +108,16 @@ func (b *Backend) UpdateIndex() error {
 
 func (b *Backend) Statistics() (Statistics, error) {
 	return ComputeStatistics()
+}
+
+func (b *Backend) LoadScrolls(ids []ID) ([]Scroll, error) {
+	result := make([]Scroll, len(ids))
+	for i, id := range ids {
+		scroll, err := loadAndParseScrollContentByID(id)
+		if err != nil {
+			return result, err
+		}
+		result[i] = scroll
+	}
+	return result, nil
 }

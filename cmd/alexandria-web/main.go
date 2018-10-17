@@ -24,6 +24,7 @@ import (
 	"net/http"
 	"os"
 	"runtime/pprof"
+	"strings"
 
 	flag "github.com/ogier/pflag"
 
@@ -36,15 +37,17 @@ const (
 )
 
 // Send the statistics page to the client.
-func statsHandler(w http.ResponseWriter, r *http.Request) {
-	stats, err := alexandria.ComputeStatistics()
-	if err != nil {
-		fmt.Fprint(w, err)
-		return
+func statsHandler(b alexandria.Backend) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		stats, err := b.Statistics()
+		if err != nil {
+			fmt.Fprint(w, err)
+			return
+		}
+		n := stats.NumberOfScrolls()
+		size := float32(stats.TotalSize()) / 1024.0
+		fmt.Fprintf(w, "The library contains %v scrolls with a total size of %.1f kiB.\n", n, size)
 	}
-	n := stats.NumberOfScrolls()
-	size := float32(stats.TotalSize()) / 1024.0
-	fmt.Fprintf(w, "The library contains %v scrolls with a total size of %.1f kiB.\n", n, size)
 }
 
 // Handle the edit-link, causing the browser to open that scroll in an editor.
@@ -96,20 +99,34 @@ func min(a, b int) int {
 }
 
 // Handle a query and serve the results.
-func queryHandler(w http.ResponseWriter, r *http.Request) {
-	query := r.FormValue("q")
-	if query == "" {
-		mainHandler(w, r)
-		return
+func queryHandler(b alexandria.Backend) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		query := r.FormValue("q")
+		if query == "" {
+			mainHandler(w, r)
+			return
+		}
+		ids, totalMatches, err := b.FindMatchingScrolls(query)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		ids, errors := b.RenderScrollsByID(ids)
+		if len(errors) != 0 {
+			errorStrings := make([]string, len(errors))
+			for i, err := range errors {
+				errorStrings[i] = err.Error()
+				fmt.Fprintf(os.Stderr, "%v;\n", err.Error())
+			}
+			http.Error(w, strings.Join(errorStrings, ";\n"), http.StatusInternalServerError)
+			return
+		}
+		numMatches := len(ids)
+		results, err := b.LoadScrolls(ids)
+		data := result{Query: query, NumMatches: numMatches, Matches: results[:min(20, numMatches)], TotalMatches: totalMatches}
+		renderTemplate(w, "search", data)
 	}
-	results, err := alexandria.FindScrolls(query)
-	if err != nil {
-		panic(err)
-	}
-	numMatches := len(results.IDs)
-	data := result{Query: query, NumMatches: numMatches, Matches: results.IDs[:min(20, numMatches)],
-		TotalMatches: results.Total}
-	renderTemplate(w, "search", data)
 }
 
 func serveDirectory(prefix string, directory string) {
@@ -139,11 +156,12 @@ func main() {
 		return
 	}
 
-	alexandria.UpdateIndex()
+	b := alexandria.NewBackend()
+	b.UpdateIndex()
 
 	http.HandleFunc("/", mainHandler)
-	http.HandleFunc("/stats", statsHandler)
-	http.HandleFunc("/search", queryHandler)
+	http.HandleFunc("/stats", statsHandler(b))
+	http.HandleFunc("/search", queryHandler(b))
 	http.HandleFunc("/alexandria.edit", editHandler)
 	serveDirectory("/images/", alexandria.Config.CacheDirectory)
 	serveDirectory("/static/", alexandria.Config.TemplateDirectory+"static")
