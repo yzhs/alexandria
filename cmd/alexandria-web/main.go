@@ -7,6 +7,7 @@ package main
 
 import (
 	"fmt"
+	"html/template"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -47,7 +48,7 @@ func editHandler(w http.ResponseWriter, r *http.Request) {
 
 // Serve the search page.
 func mainHandler(w http.ResponseWriter, r *http.Request) {
-	html, err := loadHTMLTemplate("main")
+	html, err := loadHTMLFile("main")
 	if err != nil {
 		fmt.Fprintf(w, "%v", err)
 		return
@@ -55,7 +56,7 @@ func mainHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, string(html))
 }
 
-func loadHTMLTemplate(name string) ([]byte, error) {
+func loadHTMLFile(name string) ([]byte, error) {
 	return ioutil.ReadFile(alexandria.Config.TemplateDirectory + "html/" + name + ".html")
 }
 
@@ -67,8 +68,7 @@ type result struct {
 }
 
 func renderTemplate(w http.ResponseWriter, templateFile string, resultData result) {
-	t := alexandria.Templates.Load(templateFile, "html")
-	err := t.Execute(w, resultData)
+	err := resultTemplate.Execute(w, resultData)
 	if err != nil {
 		fmt.Fprintf(w, "Error: %v", err)
 	}
@@ -116,9 +116,16 @@ func serveDirectory(prefix string, directory string) {
 	http.Handle(prefix, http.StripPrefix(prefix, http.FileServer(http.Dir(directory))))
 }
 
-func loadTemplates() {
-	alexandria.Templates.Load("main", "html")
-	alexandria.Templates.Load("search", "html")
+var resultTemplate *template.Template
+
+// Load gets a parsed template.Template, whether from cache or from disk.
+func loadTemplate(name string) *template.Template {
+	path := alexandria.Config.TemplateDirectory + "html/" + name + ".html"
+	template, err := template.ParseFiles(path)
+	if err != nil {
+		panic(err)
+	}
+	return template
 }
 
 func main() {
@@ -146,7 +153,7 @@ func main() {
 
 	b := alexandria.NewBackend()
 	b.UpdateIndex()
-	loadTemplates()
+	resultTemplate = loadTemplate("search")
 
 	http.HandleFunc("/", mainHandler)
 	http.HandleFunc("/stats", statsHandler(b))
