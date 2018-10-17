@@ -9,15 +9,15 @@
 {{$query := .Query}}
 </head>
 <body>
-    <header class="container-fluid">
+	<header class="container-fluid">
 		<form class="input-group" action="search" method="get" accept-charset="utf-8">
 			<input type="search" name="q" id="query" class="form-control"
 				placeholder="Enter search…" value="{{.Query}}" autofocus/>
 			<button type="submit" id="search" class="btn btn-primary">Search</button>
 		</form>
-    </header>
+	</header>
 
-    <main>{{range $value := .Matches}}
+	<main>{{range $value := .Matches}}
 		<div class="scroll">
 			<button class="scroll-id" data-clipboard-text="{{$value.ID}}">
 				{{$value.ID}}
@@ -43,10 +43,10 @@
 
 	<footer>
 		{{ if eq .NumMatches 0 }}Found no matching scrolls.{{ else if le .TotalMatches 20 }}Displaying matches 1–{{.NumMatches}} of {{.TotalMatches}}. {{ else }}Displaying matches 1–20 of {{.TotalMatches}}.{{ end }}
-    </footer>
+	</footer>
 
-    <script>
+	<script>
 		var clipboard = new Clipboard('.id');
-    </script>
+	</script>
 </body>
 </html>
