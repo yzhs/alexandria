@@ -26,7 +26,11 @@ import (
 )
 
 type Backend struct {
-	Renderer LatexToPngRenderer
+	renderer LatexToPngRenderer
+}
+
+func NewBackend() Backend {
+	return Backend{renderer: XelatexImagemagickRenderer{}}
 }
 
 func (b *Backend) RenderAllScrolls() (numScrolls int, errors []error) {
@@ -39,7 +43,7 @@ func (b *Backend) RenderScrollsByID(ids []ID) (renderedScrollIDs []ID, errors []
 	renderedScrollIDs = make([]ID, len(ids))
 	numScrolls := 0
 	for _, id := range ids {
-		err := RenderScroll(id, b.Renderer)
+		err := RenderScroll(id, b.renderer)
 		if err != nil {
 			errors = append(errors, fmt.Errorf("rendering %v failed", id))
 		} else {
