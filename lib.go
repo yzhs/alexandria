@@ -20,6 +20,7 @@ package alexandria
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -120,4 +121,23 @@ func (b *Backend) LoadScrolls(ids []ID) ([]Scroll, error) {
 		result[i] = scroll
 	}
 	return result, nil
+}
+
+// Config holds all the configuration of Alexandria.
+var Config Configuration
+
+// InitConfig initializes Config with reasonable default values.
+func InitConfig() {
+	Config.Quality = 90
+	Config.Dpi = 160
+	Config.MaxResults = 1000
+	Config.MaxProcs = 4
+
+	dir := os.Getenv("HOME") + "/.alexandria/"
+
+	Config.AlexandriaDirectory = dir
+	Config.KnowledgeDirectory = dir + "library/"
+	Config.CacheDirectory = dir + "cache/"
+	Config.TemplateDirectory = dir + "templates/"
+	Config.TempDirectory = dir + "tmp/"
 }

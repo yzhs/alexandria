@@ -17,8 +17,6 @@
 
 package alexandria
 
-import "os"
-
 // Programm name and version
 const (
 	NAME    = "Alexandria"
@@ -96,23 +94,4 @@ type Results struct {
 	IDs []Scroll
 	// How many results there were all in all; can be significantly larger than len(IDs).
 	Total int
-}
-
-// Config holds all the configuration of Alexandria.
-var Config Configuration
-
-// InitConfig initializes Config with reasonable default values.
-func InitConfig() {
-	Config.Quality = 90
-	Config.Dpi = 160
-	Config.MaxResults = 1000
-	Config.MaxProcs = 4
-
-	dir := os.Getenv("HOME") + "/.alexandria/"
-
-	Config.AlexandriaDirectory = dir
-	Config.KnowledgeDirectory = dir + "library/"
-	Config.CacheDirectory = dir + "cache/"
-	Config.TemplateDirectory = dir + "templates/"
-	Config.TempDirectory = dir + "tmp/"
 }
