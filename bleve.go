@@ -51,7 +51,7 @@ func updateIndex() error {
 		}
 
 		id := strings.TrimSuffix(file.Name(), ".tex")
-		scroll, err := loadAndParseScrollContent(id, file)
+		scroll, err := loadAndParseScrollContentByID(ID(id))
 		if err != nil {
 			logError(err)
 			continue
@@ -125,21 +125,12 @@ func isOlderThan(file os.FileInfo, indexUpdateTime int64) bool {
 	return modTime < indexUpdateTime
 }
 
-func loadAndParseScrollContent(id string, file os.FileInfo) (Scroll, error) {
-	contentBytes, err := ioutil.ReadFile(Config.KnowledgeDirectory + file.Name())
-	tryLogError(err)
-	content := string(contentBytes)
-	scroll := parse(id, content)
-	return scroll, err
-}
-
 func loadAndParseScrollContentByID(id ID) (Scroll, error) {
 	content, err := readScroll(id)
 	if err != nil {
 		return Scroll{}, err
 	}
-	scroll := parse(string(id), content)
-	return scroll, nil
+	return parse(string(id), content), nil
 }
 
 // RemoveFromIndex removes a specified document from the index. This is
