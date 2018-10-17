@@ -28,27 +28,6 @@ import (
 	"github.com/yzhs/alexandria"
 )
 
-func printStats() {
-	stats, err := alexandria.ComputeStatistics()
-	if err != nil {
-		panic(err)
-	}
-	n := stats.NumberOfScrolls()
-	size := float32(stats.TotalSize()) / 1024.0
-	fmt.Printf("The library contains %v scrolls with a total size of %.1f kiB.\n", n, size)
-}
-
-func renderMatchesForQuery(query string) {
-	results, err := alexandria.FindScrolls(query)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Printf("There are %d matching scrolls.\n", len(results.IDs))
-	for _, scroll := range results.IDs {
-		fmt.Println("file://" + alexandria.Config.CacheDirectory + string(scroll.ID) + ".png")
-	}
-}
-
 func main() {
 	var index, profile, stats, version bool
 	flag.BoolVarP(&index, "index", "i", false, "\tUpdate the index")
@@ -69,25 +48,63 @@ func main() {
 		defer pprof.StopCPUProfile()
 	}
 
+	b := alexandria.Backend{alexandria.XelatexImagemagickRenderer{}}
+
 	switch {
 	case index:
-		alexandria.UpdateIndex()
+		b.UpdateIndex()
 	case stats:
-		printStats()
+		printStats(b)
 	case version:
 		fmt.Println(alexandria.NAME, alexandria.VERSION)
-	case len(os.Args) == 0:
+	case len(os.Args) <= 1:
 		println("Nothing to do")
 	case len(os.Args) == 2 && os.Args[1] == "all":
-		var x alexandria.XelatexImagemagickRenderer
-		fmt.Printf("Rendered all %d scrolls.\n", alexandria.RenderAllScrolls(x))
-		os.Exit(0)
+		numScrolls, errors := b.RenderAllScrolls()
+		fmt.Printf("Rendered all %d scrolls.\n", numScrolls)
+		if len(errors) != 0 {
+			printErrors(errors)
+			os.Exit(1)
+		}
 
 	default:
 		i := 1
 		if os.Args[1] == "--" {
 			i += 1
 		}
-		renderMatchesForQuery(strings.Join(os.Args[i:], " "))
+		renderMatchesForQuery(b, strings.Join(os.Args[i:], " "))
+	}
+}
+
+func printStats(b alexandria.Backend) {
+	stats, err := b.Statistics()
+	if err != nil {
+		panic(err)
+	}
+	n := stats.NumberOfScrolls()
+	size := float32(stats.TotalSize()) / 1024.0
+	fmt.Printf("The library contains %v scrolls with a total size of %.1f kiB.\n", n, size)
+}
+
+func renderMatchesForQuery(b alexandria.Backend, query string) {
+	ids, err := b.FindMatchingScrolls(query)
+	if err != nil {
+		panic(err)
+	}
+	renderedIDs, errors := b.RenderScrollsByID(ids)
+	fmt.Printf("There are %d matching scrolls.\n", len(renderedIDs))
+	for _, id := range renderedIDs {
+		fmt.Println("file://" + alexandria.Config.CacheDirectory + string(id) + ".png")
+	}
+	if len(errors) != 0 {
+		printErrors(errors)
+		os.Exit(1)
+	}
+}
+
+func printErrors(errors []error) {
+	fmt.Fprintf(os.Stderr, "The following errors occurred:\n")
+	for _, err := range errors {
+		fmt.Fprintln(os.Stderr, err)
 	}
 }
