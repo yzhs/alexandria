@@ -6,13 +6,10 @@
 package alexandria
 
 import (
-	"io/ioutil"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strconv"
-	"strings"
 
 	"github.com/pkg/errors"
 )
@@ -21,8 +18,6 @@ import (
 // in the library, i.e. has been deleted but RemoveFromIndex has not yet been
 // called on it.
 var ErrNoSuchScroll = errors.New("No such scroll")
-
-const hashes = "############################################################"
 
 type errTemplateReader struct {
 	doc string
@@ -151,65 +146,4 @@ func renderScroll(id ID, renderer latexToPngRenderer) error {
 	renderer.deleteTemporaryFiles(id)
 
 	return errors.Wrap(renderer.err(), "rendering")
-}
-
-// renderListOfScrolls takes a list of scroll IDs and passes them to the given
-// rendering backend.
-func renderListOfScrolls(ids []Scroll, renderer latexToPngRenderer) int {
-	numScrolls := 0
-
-	for _, foo := range ids {
-		id := foo.ID
-		err := renderScroll(id, renderer)
-		if err != nil {
-			if err == ErrNoSuchScroll {
-				continue
-			} else {
-				log.Panic("An error ocurred when processing scroll ", id, ": ", err)
-			}
-		} else {
-			numScrolls++
-		}
-	}
-
-	return numScrolls
-}
-
-// renderAllScrolls goes through the library directory and renders every
-// available scroll.  This allows us to perform all the expensive LaTeX-to-PDF
-// conversions ahead-of-time, so queries can be answered more quickly.
-func renderAllScrolls(renderer latexToPngRenderer) int {
-	files, err := ioutil.ReadDir(Config.KnowledgeDirectory)
-	if err != nil {
-		panic(err)
-	}
-	var errors []error
-	limitGoroutines := make(chan bool, Config.MaxProcs)
-	for i := 0; i < Config.MaxProcs; i++ {
-		limitGoroutines <- true
-	}
-	ch := make(chan int, len(files))
-	for _, file := range files {
-		go func(file os.FileInfo) {
-			<-limitGoroutines
-			if !strings.HasSuffix(file.Name(), ".tex") {
-				ch <- 0
-				return
-			}
-			id := ID(strings.TrimSuffix(file.Name(), ".tex"))
-			if err := renderScroll(id, renderer); err != nil && err != ErrNoSuchScroll {
-				log.Printf("%s\nERROR\n%s\n%v\n%s\n", hashes, hashes, err, hashes)
-			}
-			ch <- 1
-		}(file)
-	}
-	counter := 0
-	for i := 0; i < len(files); i++ {
-		counter += <-ch
-		limitGoroutines <- true
-	}
-	for _, err := range errors {
-		log.Printf("Error: %v\n", err)
-	}
-	return counter
 }

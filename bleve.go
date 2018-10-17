@@ -7,7 +7,6 @@ package alexandria
 
 import (
 	"io/ioutil"
-	"log"
 	"os"
 	"strings"
 	"time"
@@ -154,60 +153,6 @@ func removeFromIndex(id ID) error {
 	return index.Delete(string(id))
 }
 
-// FindScrolls computes a list of scrolls matching the query.
-func findScrolls(query string) (Results, error) {
-	results, err := searchBleve(query)
-	if err != nil {
-		return Results{}, err
-	}
-	var x xelatexImagemagickRenderer
-	n := renderListOfScrolls(results.IDs, x)
-	ids := make([]Scroll, n)
-	i := 0
-	for _, id := range results.IDs {
-		if _, err := os.Stat(Config.KnowledgeDirectory + string(id.ID) + ".tex"); os.IsNotExist(err) {
-			continue
-		}
-		ids[i] = Scroll{ID: id.ID}
-		i++
-	}
-	results.Total = n // The number of hits can be wrong if scrolls have been deleted
-
-	return results, nil
-}
-
-func searchBleve(queryString string) (Results, error) {
-	index, err := openExistingIndex()
-	if err != nil {
-		logError(err)
-		return Results{}, err
-	}
-	defer index.Close()
-
-	newQueryString := translatePlusMinusTildePrefixes(queryString)
-	searchResults, err := performQuery(index, newQueryString)
-	if err != nil {
-		if err.Error() == "syntax error" {
-			log.Printf("Invalid query string: '%v'", newQueryString)
-			err = nil
-		}
-		return Results{}, err
-	}
-
-	scrolls := loadMatchingScrolls(searchResults)
-
-	return Results{scrolls[:len(searchResults.Hits)], int(searchResults.Total)}, nil
-}
-
-// Bleve's query language allows terms with different prefixes.  Terms starting
-// with a + are required, terms starting with a - are not allowed.  Without
-// either of these prefixes, Bleve will also find documents that do *not*
-// contain this term.
-//
-// In general, I want most terms to be prefixed with a +, but not type a plus
-// in front of every term.  Therefore, Alexandria's query language
-// automatically adds a plus in front of terms that have neither a plus nor
-// minus prefix.  To make a term optional, it can be prefixed with a ~.
 func translatePlusMinusTildePrefixes(queryString string) string {
 	newQueryString := ""
 	for _, tmp := range strings.Split(queryString, " ") {
@@ -229,21 +174,6 @@ func performQuery(index bleve.Index, newQueryString string) (*bleve.SearchResult
 	search := bleve.NewSearchRequest(query)
 	search.Size = Config.MaxResults
 	return index.Search(search)
-}
-
-func loadMatchingScrolls(searchResults *bleve.SearchResult) []Scroll {
-	var scrolls []Scroll
-	for _, match := range searchResults.Hits {
-		id := ID(match.ID)
-		scroll, err := loadAndParseScrollContentByID(id)
-		if err != nil {
-			logError(err)
-			continue
-		}
-		scrolls = append(scrolls, scroll)
-	}
-
-	return scrolls
 }
 
 // computeStatistics counts the number of scrolls in the library and computes
