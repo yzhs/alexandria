@@ -1,4 +1,5 @@
 // This file is part of Alexandria which is released under AGPLv3.
+// Copyright (C) 2015-2018 Colin Benner
 // See LICENSE or go to https://github.com/yzhs/alexandria/LICENSE for full
 // license details.
 

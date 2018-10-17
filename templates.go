@@ -1,3 +1,8 @@
+// This file is part of Alexandria which is released under AGPLv3.
+// Copyright (C) 2015-2018 Colin Benner
+// See LICENSE or go to https://github.com/yzhs/alexandria/LICENSE for full
+// license details.
+
 package alexandria
 
 import (
@@ -10,9 +15,9 @@ type CompiledTemplates struct {
 
 var Templates CompiledTemplates
 
-func (self CompiledTemplates) Load(typ, name string) *template.Template {
+func (templates CompiledTemplates) Load(typ, name string) *template.Template {
 	fullName := name + "." + typ
-	template, ok := self.cache[fullName]
+	template, ok := templates.cache[fullName]
 	if ok {
 		return template
 	}
@@ -22,6 +27,6 @@ func (self CompiledTemplates) Load(typ, name string) *template.Template {
 	if err != nil {
 		panic(err)
 	}
-	self.cache[fullName] = template
+	templates.cache[fullName] = template
 	return template
 }
