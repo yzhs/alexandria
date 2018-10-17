@@ -9,12 +9,14 @@ import (
 	"html/template"
 )
 
+// CompiledTemplates holds precompiled HTML templates.
 type CompiledTemplates struct {
 	cache map[string]*template.Template
 }
 
 var Templates CompiledTemplates
 
+// Load gets a parsed template.Template, whether from cache or from disk.
 func (templates CompiledTemplates) Load(typ, name string) *template.Template {
 	fullName := name + "." + typ
 	template, ok := templates.cache[fullName]
