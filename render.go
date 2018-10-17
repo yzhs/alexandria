@@ -22,6 +22,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -135,7 +136,14 @@ func (x xelatexImagemagickRenderer) pdfToPng(i ID) {
 }
 
 func (x xelatexImagemagickRenderer) deleteTemporaryFiles(id ID) {
-	// TODO delete Config.TempDirectory + id + ".*"
+	files, err := filepath.Glob(Config.TempDirectory + string(id) + ".*")
+	if err != nil {
+		logError(err)
+		return
+	}
+	for _, file := range files {
+		tryLogError(os.Remove(file))
+	}
 }
 
 func (x xelatexImagemagickRenderer) err() error {
