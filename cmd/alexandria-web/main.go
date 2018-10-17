@@ -7,7 +7,6 @@ package main
 
 import (
 	"fmt"
-	"html/template"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -68,12 +67,8 @@ type result struct {
 }
 
 func renderTemplate(w http.ResponseWriter, templateFile string, resultData result) {
-	t, err := template.ParseFiles(alexandria.Config.TemplateDirectory + "html/" + templateFile + ".html")
-	if err != nil {
-		fmt.Fprintf(w, "Error: %v", err)
-		return
-	}
-	err = t.Execute(w, resultData)
+	t := alexandria.Templates.Load(templateFile, "html")
+	err := t.Execute(w, resultData)
 	if err != nil {
 		fmt.Fprintf(w, "Error: %v", err)
 	}
@@ -121,6 +116,11 @@ func serveDirectory(prefix string, directory string) {
 	http.Handle(prefix, http.StripPrefix(prefix, http.FileServer(http.Dir(directory))))
 }
 
+func loadTemplates() {
+	alexandria.Templates.Load("main", "html")
+	alexandria.Templates.Load("search", "html")
+}
+
 func main() {
 	var profile, version bool
 	flag.BoolVarP(&version, "version", "v", false, "\tShow version")
@@ -146,6 +146,7 @@ func main() {
 
 	b := alexandria.NewBackend()
 	b.UpdateIndex()
+	loadTemplates()
 
 	http.HandleFunc("/", mainHandler)
 	http.HandleFunc("/stats", statsHandler(b))
