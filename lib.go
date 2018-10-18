@@ -1,3 +1,6 @@
+// This file contains most of the public interface of Alexandria (the library).
+// The remainder is the types defined in datastructures.go.
+
 // This file is part of Alexandria which is released under AGPLv3.
 // Copyright (C) 2015-2018 Colin Benner
 // See LICENSE or go to https://github.com/yzhs/alexandria/LICENSE for full
@@ -12,6 +15,12 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
+)
+
+// Programm name and version
+const (
+	NAME    = "Alexandria"
+	VERSION = "0.1"
 )
 
 type Backend struct {

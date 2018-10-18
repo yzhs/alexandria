@@ -1,32 +1,12 @@
+// This, together with lib.go, forms the public interface of Alexandria (the
+// library).
+
 // This file is part of Alexandria which is released under AGPLv3.
 // Copyright (C) 2015-2018 Colin Benner
 // See LICENSE or go to https://github.com/yzhs/alexandria/LICENSE for full
 // license details.
 
 package alexandria
-
-// Programm name and version
-const (
-	NAME    = "Alexandria"
-	VERSION = "0.1"
-)
-
-// Stats contains the size of the library, in number of scrolls and in terms of
-// file size.
-type stats struct {
-	numScrolls int
-	fileSize   int64
-}
-
-// NumberOfScrolls returns the number of scrolls in the library.
-func (s stats) NumberOfScrolls() int {
-	return s.numScrolls
-}
-
-// TotalSize returns the total size of the files in the library.
-func (s stats) TotalSize() int64 {
-	return s.fileSize
-}
 
 // ID holds UUID identifying a scroll.
 type ID string

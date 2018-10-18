@@ -14,10 +14,10 @@ import (
 	"github.com/pkg/errors"
 )
 
-// ErrNoSuchScroll is used when a query returns a scroll ID that is no longer
+// errNoSuchScroll is used when a query returns a scroll ID that is no longer
 // in the library, i.e. has been deleted but RemoveFromIndex has not yet been
 // called on it.
-var ErrNoSuchScroll = errors.New("No such scroll")
+var errNoSuchScroll = errors.New("No such scroll")
 
 type errTemplateReader struct {
 	doc string
@@ -72,7 +72,7 @@ func (x *xelatexImagemagickRenderer) scrollToLatex(id ID) {
 			if err != nil {
 				logError(err)
 			}
-			x.error = ErrNoSuchScroll
+			x.error = errNoSuchScroll
 			return
 		}
 		x.error = err
