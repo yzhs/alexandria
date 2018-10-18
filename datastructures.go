@@ -31,12 +31,6 @@ func (s Stats) TotalSize() int64 {
 // ID holds UUID identifying a scroll.
 type ID string
 
-// Renderer allows you to render a scroll of a certain file type.
-type Renderer interface {
-	Extension() string
-	Render(id ID) error
-}
-
 // Statistics computes data about how large your library is.
 type Statistics interface {
 	NumberOfScrolls() int
@@ -74,12 +68,4 @@ type Scroll struct {
 	Tags        []string `json:"tag"`
 	Hidden      []string `json:"hidden"`
 	OtherLines  []string `json:"other"`
-}
-
-// Results holds both the IDs of the first n scrolls matching a query, and the
-// number of matches.
-type Results struct {
-	IDs []Scroll
-	// How many results there were all in all; can be significantly larger than len(IDs).
-	Total int
 }
