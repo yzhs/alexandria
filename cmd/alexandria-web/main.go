@@ -8,7 +8,6 @@ package main
 import (
 	"fmt"
 	"html/template"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"runtime/pprof"
@@ -46,18 +45,8 @@ func editHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, id)
 }
 
-// Serve the search page.
 func mainHandler(w http.ResponseWriter, r *http.Request) {
-	html, err := loadHTMLFile("main")
-	if err != nil {
-		fmt.Fprintf(w, "%v", err)
-		return
-	}
-	fmt.Fprintln(w, string(html))
-}
-
-func loadHTMLFile(name string) ([]byte, error) {
-	return ioutil.ReadFile(alexandria.Config.TemplateDirectory + "html/" + name + ".html")
+	http.ServeFile(w, r, alexandria.Config.TemplateDirectory+"html/main.html")
 }
 
 type result struct {
