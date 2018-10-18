@@ -172,19 +172,19 @@ func performQuery(index bleve.Index, newQueryString string) (*bleve.SearchResult
 func computeStatistics() (Statistics, error) {
 	index, err := openExistingIndex()
 	if err != nil {
-		return Stats{}, errors.Wrap(err, "open existing index")
+		return stats{}, errors.Wrap(err, "open existing index")
 	}
 	defer index.Close()
 
 	_, size, err := getDirSize(Config.KnowledgeDirectory)
 	if err != nil {
-		return Stats{}, errors.Wrap(err, "get size of library directory")
+		return stats{}, errors.Wrap(err, "get size of library directory")
 	}
 
 	num, err := index.DocCount()
 	if err != nil {
-		return Stats{}, errors.Wrap(err, "get number of scrolls in the index")
+		return stats{}, errors.Wrap(err, "get number of scrolls in the index")
 	}
 
-	return Stats{int(num), size}, nil
+	return stats{int(num), size}, nil
 }

@@ -13,18 +13,18 @@ const (
 
 // Stats contains the size of the library, in number of scrolls and in terms of
 // file size.
-type Stats struct {
+type stats struct {
 	numScrolls int
 	fileSize   int64
 }
 
 // NumberOfScrolls returns the number of scrolls in the library.
-func (s Stats) NumberOfScrolls() int {
+func (s stats) NumberOfScrolls() int {
 	return s.numScrolls
 }
 
 // TotalSize returns the total size of the files in the library.
-func (s Stats) TotalSize() int64 {
+func (s stats) TotalSize() int64 {
 	return s.fileSize
 }
 
