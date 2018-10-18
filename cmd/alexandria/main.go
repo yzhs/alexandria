@@ -25,7 +25,6 @@ func main() {
 	flag.Parse()
 
 	alexandria.Config.MaxResults = 1e9
-
 	if profile {
 		f, err := os.Create("alexandria.prof")
 		if err != nil {

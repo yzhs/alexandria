@@ -8,6 +8,7 @@ package main
 import (
 	"fmt"
 	"html/template"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"runtime/pprof"
@@ -57,7 +58,7 @@ type result struct {
 }
 
 func renderTemplate(w http.ResponseWriter, templateFile string, resultData result) {
-	err := resultTemplate.Execute(w, resultData)
+	err := loadTemplate("search").Execute(w, resultData)
 	if err != nil {
 		fmt.Fprintf(w, "Error: %v", err)
 	}
@@ -107,15 +108,29 @@ func serveDirectory(prefix string, directory string) {
 
 // Load gets a parsed template.Template, whether from cache or from disk.
 func loadTemplate(name string) *template.Template {
-	path := alexandria.Config.TemplateDirectory + "html/" + name + ".html"
+	relPath := "html/" + name + ".html"
+	path := alexandria.Config.TemplateDirectory + relPath
 	template, err := template.ParseFiles(path)
+	if os.IsNotExist(err) {
+		template, err = loadTemplateFromAssets(relPath)
+	}
 	if err != nil {
 		panic(err)
 	}
 	return template
 }
 
-var resultTemplate = loadTemplate("search")
+func loadTemplateFromAssets(relPath string) (*template.Template, error) {
+	file, err := alexandria.Assets.Open(relPath)
+	if err != nil {
+		return nil, err
+	}
+	content, err := ioutil.ReadAll(file)
+	if err != nil {
+		return nil, err
+	}
+	return template.New(relPath).Parse(string(content))
+}
 
 func main() {
 	var profile, version bool
@@ -147,7 +162,7 @@ func main() {
 	http.HandleFunc("/search", queryHandler(b))
 	http.HandleFunc("/alexandria.edit", editHandler)
 	serveDirectory("/images/", alexandria.Config.CacheDirectory)
-	serveDirectory("/static/", alexandria.Config.TemplateDirectory+"static")
+	http.Handle("/static/", http.FileServer(alexandria.Assets))
 	err := http.ListenAndServe(LISTEN_ON, nil)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v", err)

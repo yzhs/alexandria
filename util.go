@@ -33,8 +33,13 @@ func readScroll(id ID) (string, error) {
 
 // Load the content of a template file with the given name.
 func readTemplate(filename string) (string, error) {
-	result, err := ioutil.ReadFile(Config.TemplateDirectory + "tex/" + filename + ".tex")
-	return string(result), errors.Wrapf(err, "read template %v", filename)
+	path := "tex/" + filename + ".tex"
+	file, err := Assets.Open(path)
+	if err != nil {
+		return "", errors.Wrapf(err, "opening asset %v", path)
+	}
+	result, err := ioutil.ReadAll(file)
+	return string(result), errors.Wrap(err, "readall")
 }
 
 // Write a TeX file with the given name and content to Alexandria's temp
@@ -94,6 +99,10 @@ func isUpToDate(id ID) bool {
 	if templatesModTime == -1 {
 		// Check template for modification times
 		templatesModTime = 0
+		foo, err := getModTime(os.Args[0])
+		if err != nil && foo > templatesModTime {
+			templatesModTime = foo
+		}
 
 		for _, file := range templateFiles {
 			foo, err := getModTime(Config.TemplateDirectory + file)
