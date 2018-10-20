@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/shurcooL/vfsgen"
-	"github.com/yzhs/alexandria"
 )
 
 func main() {
