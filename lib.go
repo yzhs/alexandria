@@ -6,6 +6,8 @@
 // See LICENSE or go to https://github.com/yzhs/alexandria/LICENSE for full
 // license details.
 
+//go:generate go run contrib/generate_assets.go
+
 package alexandria
 
 import (
