@@ -29,6 +29,13 @@ type LatexToPngBackend struct {
 	renderer latexToPngRenderer
 }
 
+type scrollType int
+
+const (
+	latexScroll scrollType = iota
+	markdownScroll
+)
+
 func NewLatexToPngBackend() LatexToPngBackend {
 	return LatexToPngBackend{renderer: &xelatexImagemagickRenderer{}}
 }
