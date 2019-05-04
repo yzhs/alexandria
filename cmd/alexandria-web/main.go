@@ -25,7 +25,7 @@ const (
 )
 
 // Send the statistics page to the client.
-func statsHandler(b alexandria.Backend) func(w http.ResponseWriter, r *http.Request) {
+func statsHandler(b alexandria.LatexToPngBackend) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		stats, err := b.Statistics()
 		if err != nil {
@@ -72,7 +72,7 @@ func min(a, b int) int {
 }
 
 // Handle a query and serve the results.
-func queryHandler(b alexandria.Backend) func(http.ResponseWriter, *http.Request) {
+func queryHandler(b alexandria.LatexToPngBackend) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		query := r.FormValue("q")
 		if query == "" {
@@ -154,7 +154,7 @@ func main() {
 		return
 	}
 
-	b := alexandria.NewBackend()
+	b := alexandria.NewLatexToPngBackend()
 	b.UpdateIndex()
 
 	http.HandleFunc("/", mainHandler)

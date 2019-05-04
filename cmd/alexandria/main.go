@@ -34,7 +34,7 @@ func main() {
 		defer pprof.StopCPUProfile()
 	}
 
-	b := alexandria.NewBackend()
+	b := alexandria.NewLatexToPngBackend()
 
 	switch {
 	case index:
@@ -56,7 +56,7 @@ func main() {
 	}
 }
 
-func renderEverything(b alexandria.Backend) {
+func renderEverything(b alexandria.LatexToPngBackend) {
 	numScrolls, errors := b.RenderAllScrolls()
 	fmt.Printf("Rendered all %d scrolls.\n", numScrolls)
 	if len(errors) != 0 {
@@ -65,7 +65,7 @@ func renderEverything(b alexandria.Backend) {
 	}
 }
 
-func printStats(b alexandria.Backend) {
+func printStats(b alexandria.LatexToPngBackend) {
 	stats, err := b.Statistics()
 	if err != nil {
 		panic(err)
@@ -75,7 +75,7 @@ func printStats(b alexandria.Backend) {
 	fmt.Printf("The library contains %v scrolls with a total size of %.1f kiB.\n", n, size)
 }
 
-func renderMatchesForQuery(b alexandria.Backend, query string) {
+func renderMatchesForQuery(b alexandria.LatexToPngBackend, query string) {
 	ids, _, err := b.FindMatchingScrolls(query)
 	if err != nil {
 		panic(err)
