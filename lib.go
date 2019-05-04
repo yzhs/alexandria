@@ -11,12 +11,7 @@
 package alexandria
 
 import (
-	"fmt"
-	"io/ioutil"
 	"os"
-	"strings"
-
-	"github.com/pkg/errors"
 )
 
 // Programm name and version
@@ -25,28 +20,6 @@ const (
 	VERSION = "0.1"
 )
 
-type Backend interface {
-	RenderAllScrolls() (numScrolls int, errors []error)
-
-	RenderScrollsByID(ids []ID) (renderedScrollIDs []ID, errors []error)
-
-	FindMatchingScrolls(query string) ([]ID, int, error)
-
-	// IDsForAllScrolls goes through the library directory and creates a list of
-	// IDs of all available scrolls.
-	IDsForAllScrolls() []ID
-
-	UpdateIndex() error
-
-	Statistics() (Statistics, error)
-
-	LoadScrolls(ids []ID) ([]Scroll, error)
-}
-
-type LatexToPngBackend struct {
-	renderer latexToPngRenderer
-}
-
 type scrollType int
 
 const (
@@ -54,33 +27,27 @@ const (
 	markdownScroll
 )
 
+type Backend interface {
+	// RenderAllScrolls does what it says on the tin: it pre-renders all
+	// scrolls, returning the number of scrolls rendered and an array of
+	// all the errors that occurred in the process.
+	RenderAllScrolls() (numScrolls int, errors []error)
+
+	// RenderScrollsById renders all the scrolls specified, returning the
+	// IDs of all scrolls that were successfully rendered, and a list of
+	// the errors that were encountered in the process.
+	RenderScrollsByID(ids []ID) (renderedScrollIDs []ID, errors []error)
+}
+
 func NewBackend() Backend {
 	return LatexToPngBackend{renderer: &xelatexImagemagickRenderer{}}
 }
 
-func (b LatexToPngBackend) RenderAllScrolls() (numScrolls int, errors []error) {
-	ids := b.IDsForAllScrolls()
-	renderedIDs, errors := b.RenderScrollsByID(ids)
-	return len(renderedIDs), errors
-}
-
-func (b LatexToPngBackend) RenderScrollsByID(ids []ID) (renderedScrollIDs []ID, errors []error) {
-	renderedScrollIDs = make([]ID, len(ids))
-	numScrolls := 0
-	for _, id := range ids {
-		err := renderScroll(id, b.renderer)
-		if err != nil {
-			errors = append(errors, fmt.Errorf("rendering %v failed", id))
-		} else {
-			renderedScrollIDs[numScrolls] = id
-			numScrolls++
-		}
-	}
-
-	return renderedScrollIDs[:numScrolls], errors
-}
-
-func (b LatexToPngBackend) FindMatchingScrolls(query string) ([]ID, int, error) {
+// FindMatchingScrolls asks the storage backend for all scrolls matching the
+// given query. It the IDs of the first of those scrolls, the total number of
+// matches (which can be much greater than the number of IDs returned), and an
+// error, if any occurred.
+func FindMatchingScrolls(query string) ([]ID, int, error) {
 	index, err := openExistingIndex()
 	if err != nil {
 		return []ID{}, 0, err
@@ -110,7 +77,7 @@ func (b LatexToPngBackend) FindMatchingScrolls(query string) ([]ID, int, error) 
 
 // IDsForAllScrolls goes through the library directory and creates a list of
 // IDs of all available scrolls.
-func (b LatexToPngBackend) IDsForAllScrolls() []ID {
+func (LatexToPngBackend) IDsForAllScrolls() []ID {
 	files, err := ioutil.ReadDir(Config.KnowledgeDirectory)
 	if err != nil {
 		panic(err)
@@ -127,15 +94,15 @@ func (b LatexToPngBackend) IDsForAllScrolls() []ID {
 	return ids
 }
 
-func (b LatexToPngBackend) UpdateIndex() error {
+func UpdateIndex() error {
 	return updateIndex()
 }
 
-func (b LatexToPngBackend) Statistics() (Statistics, error) {
+func Statistics() (Statistics, error) {
 	return computeStatistics()
 }
 
-func (b LatexToPngBackend) LoadScrolls(ids []ID) ([]Scroll, error) {
+func LoadScrolls(ids []ID) ([]Scroll, error) {
 	result := make([]Scroll, len(ids))
 	for i, id := range ids {
 		scroll, err := loadAndParseScrollContentByID(id)
