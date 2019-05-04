@@ -154,7 +154,7 @@ func main() {
 		return
 	}
 
-	b := alexandria.NewLatexToPngBackend()
+	b := alexandria.NewBackend()
 	b.UpdateIndex()
 
 	http.HandleFunc("/", mainHandler)

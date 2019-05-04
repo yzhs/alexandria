@@ -34,7 +34,7 @@ func main() {
 		defer pprof.StopCPUProfile()
 	}
 
-	b := alexandria.NewLatexToPngBackend()
+	b := alexandria.NewBackend()
 
 	switch {
 	case index:
