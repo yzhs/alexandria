@@ -10,10 +10,6 @@ package alexandria
 
 import (
 	"fmt"
-	"io/ioutil"
-	"strings"
-
-	"github.com/pkg/errors"
 )
 
 type LatexToPngBackend struct {

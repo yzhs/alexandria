@@ -38,9 +38,9 @@ func main() {
 
 	switch {
 	case index:
-		b.UpdateIndex()
+		alexandria.UpdateIndex()
 	case stats:
-		printStats(b)
+		printStats()
 	case version:
 		fmt.Println(alexandria.NAME, alexandria.VERSION)
 	case len(os.Args) <= 1:
@@ -56,7 +56,7 @@ func main() {
 	}
 }
 
-func renderEverything(b alexandria.LatexToPngBackend) {
+func renderEverything(b alexandria.Backend) {
 	numScrolls, errors := b.RenderAllScrolls()
 	fmt.Printf("Rendered all %d scrolls.\n", numScrolls)
 	if len(errors) != 0 {
@@ -65,8 +65,8 @@ func renderEverything(b alexandria.LatexToPngBackend) {
 	}
 }
 
-func printStats(b alexandria.LatexToPngBackend) {
-	stats, err := b.Statistics()
+func printStats() {
+	stats, err := alexandria.ComputeStatistics()
 	if err != nil {
 		panic(err)
 	}
@@ -75,8 +75,8 @@ func printStats(b alexandria.LatexToPngBackend) {
 	fmt.Printf("The library contains %v scrolls with a total size of %.1f kiB.\n", n, size)
 }
 
-func renderMatchesForQuery(b alexandria.LatexToPngBackend, query string) {
-	ids, _, err := b.FindMatchingScrolls(query)
+func renderMatchesForQuery(b alexandria.Backend, query string) {
+	ids, _, err := alexandria.FindMatchingScrolls(query)
 	if err != nil {
 		panic(err)
 	}

@@ -11,7 +11,11 @@
 package alexandria
 
 import (
+	"io/ioutil"
 	"os"
+	"strings"
+
+	"github.com/pkg/errors"
 )
 
 // Programm name and version
@@ -98,7 +102,7 @@ func UpdateIndex() error {
 	return updateIndex()
 }
 
-func Statistics() (Statistics, error) {
+func ComputeStatistics() (Statistics, error) {
 	return computeStatistics()
 }
 
