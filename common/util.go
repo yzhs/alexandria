@@ -3,7 +3,9 @@
 // See LICENSE or go to https://github.com/yzhs/alexandria/LICENSE for full
 // license details.
 
-package alexandria
+//go:generate go run ../contrib/generate_assets.go
+
+package common
 
 import (
 	"fmt"
@@ -13,26 +15,26 @@ import (
 	"github.com/pkg/errors"
 )
 
-// logError writes things to stderr.
-func logError(err interface{}) {
+// LogError writes things to stderr.
+func LogError(err interface{}) {
 	fmt.Fprintf(os.Stderr, "%+v\n", err)
 }
 
-// tryLogError checks whether an error occurred, and logs it if necessary.
-func tryLogError(err interface{}) {
+// TryLogError checks whether an error occurred, and logs it if necessary.
+func TryLogError(err interface{}) {
 	if err != nil {
-		logError(err)
+		LogError(err)
 	}
 }
 
 // Load the content of a given scroll from disk.
-func readScroll(id ID) (string, error) {
+func ReadScroll(id ID) (string, error) {
 	result, err := ioutil.ReadFile(Config.KnowledgeDirectory + string(id) + ".tex")
 	return string(result), errors.Wrapf(err, "read scroll %v", id)
 }
 
 // Load the content of a template file with the given name.
-func readTemplate(filename string) (string, error) {
+func ReadTemplate(filename string) (string, error) {
 	path := "tex/" + filename + ".tex"
 	file, err := Assets.Open(path)
 	if err != nil {
@@ -44,7 +46,7 @@ func readTemplate(filename string) (string, error) {
 
 // Write a TeX file with the given name and content to Alexandria's temp
 // directory.
-func writeTemp(id ID, data string) error {
+func WriteTemp(id ID, data string) error {
 	err := ioutil.WriteFile(Config.TempDirectory+string(id)+".tex", []byte(data), 0644)
 	return errors.Wrapf(err, "write %v.tex to temporary directory", id)
 }
@@ -52,7 +54,7 @@ func writeTemp(id ID, data string) error {
 // Compute the combined size of all files in a given directory.
 func getDirSize(dir string) (int, int64, error) {
 	directory, err := os.Open(dir)
-	tryLogError(err)
+	TryLogError(err)
 	defer directory.Close()
 	fileInfo, err := directory.Readdir(0)
 	if err != nil {
@@ -95,7 +97,7 @@ var templateFiles = []string{
 	"theorem_header.tex", "theorem_footer.tex"}
 
 // Check whether a given scroll has to be recompiled
-func isUpToDate(id ID) bool {
+func IsUpToDate(id ID) bool {
 	if templatesModTime == -1 {
 		// Check template for modification times
 		templatesModTime = 0

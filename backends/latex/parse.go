@@ -3,10 +3,12 @@
 // See LICENSE or go to https://github.com/yzhs/alexandria/LICENSE for full
 // license details.
 
-package alexandria
+package latex
 
 import (
 	"strings"
+
+	"github.com/yzhs/alexandria/common"
 )
 
 // Return the lines of the last LaTeX comment block without the leading %.  In
@@ -62,7 +64,7 @@ func parseTags(line string) []string {
 // 'counter-example', 'analysis', 'topology' and 'weierstraß'.  It can be found
 // in Author: Title as Lemma 3.2 on pase 41.  All the metadata is stored in the
 // final block of LaTeX comments.  Also, we simply ignore any empty lines.
-func parse(id, doc string) Scroll {
+func parse(id, doc string) common.Scroll {
 	// TODO Handle different types of tags: @source, @doctype, @keywords, and normal tags.
 	var source []string
 	var hidden []string
@@ -96,9 +98,13 @@ func parse(id, doc string) Scroll {
 	}
 	content := stripComments(doc)
 
-	return Scroll{ID: ID(id), Content: content, Type: scrollType,
+	return common.Scroll{ID: common.ID(id), Content: content, Type: scrollType,
 		SourceLines: source, Tags: tags, Hidden: hidden,
 		OtherLines: otherLines}
+}
+
+func (LatexToPngBackend) Parse(id, doc string) common.Scroll {
+	return parse(id, doc)
 }
 
 // Remove all lines that only contain a LaTeX comment.  This removes all the

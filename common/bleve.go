@@ -3,7 +3,7 @@
 // See LICENSE or go to https://github.com/yzhs/alexandria/LICENSE for full
 // license details.
 
-package alexandria
+package common
 
 import (
 	"io/ioutil"
@@ -39,7 +39,7 @@ func (s stats) TotalSize() int64 {
 //
 // Note that this function does *not* remove deleted documents from the index.
 // See `RemoveFromIndex`.
-func updateIndex() error {
+func updateIndex(b Backend) error {
 	index, isNewIndex, err := openOrCreateIndex()
 	if err != nil {
 		return errors.Wrap(err, "open or create index")
@@ -53,7 +53,7 @@ func updateIndex() error {
 	// purpose of the `index_updated` file is to reduce the number of
 	// documents we reindex. Therefore, the worst case scenario when
 	// getModTime fails is that we do some redundant work.
-	tryLogError(err)
+	TryLogError(err)
 	recordIndexUpdateStart(indexUpdateFile)
 
 	files, err := ioutil.ReadDir(Config.KnowledgeDirectory)
@@ -68,14 +68,14 @@ func updateIndex() error {
 		}
 
 		id := strings.TrimSuffix(file.Name(), ".tex")
-		scroll, err := loadAndParseScrollContentByID(ID(id))
+		scroll, err := loadAndParseScrollContentByID(b, ID(id))
 		if err != nil {
-			logError(err)
+			LogError(err)
 			continue
 		}
 		err = batch.Index(id, scroll)
 		if err != nil {
-			logError(err)
+			LogError(err)
 		}
 	}
 	return index.Batch(batch)
@@ -83,7 +83,7 @@ func updateIndex() error {
 
 func recordIndexUpdateStart(indexUpdateFile string) {
 	err := touch(indexUpdateFile)
-	tryLogError(err)
+	TryLogError(err)
 }
 
 func touch(file string) error {
@@ -94,7 +94,7 @@ func touch(file string) error {
 func openOrCreateIndex() (bleve.Index, bool, error) {
 	isNewIndex := false
 
-	index, err := openExistingIndex()
+	index, err := OpenExistingIndex()
 	if err != nil {
 		index, err = createNewIndex()
 		isNewIndex = true
@@ -103,7 +103,7 @@ func openOrCreateIndex() (bleve.Index, bool, error) {
 	return index, isNewIndex, err
 }
 
-func openExistingIndex() (bleve.Index, error) {
+func OpenExistingIndex() (bleve.Index, error) {
 	return bleve.Open(Config.AlexandriaDirectory + "bleve")
 }
 
@@ -136,24 +136,24 @@ func createNewIndex() (bleve.Index, error) {
 func isOlderThan(file os.FileInfo, indexUpdateTime int64) bool {
 	modTime, err := getModTime(Config.KnowledgeDirectory + file.Name())
 	if err != nil {
-		logError(err)
+		LogError(err)
 		return true
 	}
 	return modTime < indexUpdateTime
 }
 
-func loadAndParseScrollContentByID(id ID) (Scroll, error) {
-	content, err := readScroll(id)
+func loadAndParseScrollContentByID(b Backend, id ID) (Scroll, error) {
+	content, err := ReadScroll(id)
 	if err != nil {
 		return Scroll{}, err
 	}
-	return parse(string(id), content), nil
+	return b.Parse(string(id), content), nil
 }
 
 // RemoveFromIndex removes a specified document from the index. This is
 // necessary as UpdateIndex has no way of knowing if a document was deleted.
-func removeFromIndex(id ID) error {
-	index, err := openExistingIndex()
+func RemoveFromIndex(id ID) error {
+	index, err := OpenExistingIndex()
 	if err != nil {
 		return err
 	}
@@ -187,7 +187,7 @@ func performQuery(index bleve.Index, newQueryString string) (*bleve.SearchResult
 // computeStatistics counts the number of scrolls in the library and computes
 // their combined size.
 func computeStatistics() (Statistics, error) {
-	index, err := openExistingIndex()
+	index, err := OpenExistingIndex()
 	if err != nil {
 		return stats{}, errors.Wrap(err, "open existing index")
 	}

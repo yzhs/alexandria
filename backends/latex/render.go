@@ -3,7 +3,7 @@
 // See LICENSE or go to https://github.com/yzhs/alexandria/LICENSE for full
 // license details.
 
-package alexandria
+package latex
 
 import (
 	"os"
@@ -12,6 +12,8 @@ import (
 	"strconv"
 
 	"github.com/pkg/errors"
+
+	"github.com/yzhs/alexandria/common"
 )
 
 // errNoSuchScroll is used when a query returns a scroll ID that is no longer
@@ -30,7 +32,7 @@ func (e *errTemplateReader) readTemplate(name string) {
 		return
 	}
 
-	tmp, err := readTemplate(name)
+	tmp, err := common.ReadTemplate(name)
 	e.err = errors.Wrapf(err, "read template %v", name)
 	e.doc += tmp
 }
@@ -40,37 +42,37 @@ type latexToPngRenderer interface {
 	// Create a LaTeX file from the content of the given scroll together
 	// with all the appropriate templates.  The resulting file stored in
 	// the temp directory.
-	scrollToLatex(id ID)
+	scrollToLatex(id common.ID)
 
 	// Compile a LaTeX file with the given id to produce a PDF file.  Both
 	// input and output files are in the temp directory.
-	latexToPdf(id ID)
+	latexToPdf(id common.ID)
 
 	// Convert PDF to PNG, storing the result in the cache directory.  From
 	// there, it can be served by the web server or displayed to the user
 	// via some other user interface.
-	pdfToPng(id ID)
+	pdfToPng(id common.ID)
 
-	deleteTemporaryFiles(id ID)
+	deleteTemporaryFiles(id common.ID)
 
 	err() error
 }
 
-// xelatexImagemagickRenderer uses xelatex to handle the LaTeX-to-PDF
+// XelatexImagemagickRenderer uses xelatex to handle the LaTeX-to-PDF
 // translation, ImageMagick to convert the PDF to a PNG.
-type xelatexImagemagickRenderer struct {
+type XelatexImagemagickRenderer struct {
 	error error
 }
 
-func (x *xelatexImagemagickRenderer) scrollToLatex(id ID) {
+func (x *XelatexImagemagickRenderer) scrollToLatex(id common.ID) {
 	var e errTemplateReader
 
-	scrollText, err := readScroll(id)
+	scrollText, err := common.ReadScroll(id)
 	if err != nil {
 		if os.IsNotExist(err) {
-			err = removeFromIndex(id)
+			err = common.RemoveFromIndex(id)
 			if err != nil {
-				logError(err)
+				common.LogError(err)
 			}
 			x.error = errNoSuchScroll
 			return
@@ -90,64 +92,64 @@ func (x *xelatexImagemagickRenderer) scrollToLatex(id ID) {
 		x.error = errors.Wrapf(e.err, "producing latex file for scroll %v", id)
 		return
 	}
-	err = writeTemp(id, e.doc)
+	err = common.WriteTemp(id, e.doc)
 	x.error = errors.Wrapf(err, "writing latex file %v.tex to temporary directory", id)
 }
 
-func (x *xelatexImagemagickRenderer) latexToPdf(id ID) {
+func (x *XelatexImagemagickRenderer) latexToPdf(id common.ID) {
 	if x.error != nil {
 		return
 	}
 
 	msg, err := exec.Command("xelatex",
-		"-halt-on-error", "-output-directory", Config.TempDirectory,
-		Config.TempDirectory+string(id)).CombinedOutput()
+		"-halt-on-error", "-output-directory", common.Config.TempDirectory,
+		common.Config.TempDirectory+string(id)).CombinedOutput()
 	x.error = errors.Wrapf(err, "XeLaTeX build: %v", string(msg))
 }
 
-func (x *xelatexImagemagickRenderer) pdfToPng(i ID) {
+func (x *XelatexImagemagickRenderer) pdfToPng(i common.ID) {
 	if x.error != nil {
 		return
 	}
 
 	id := string(i)
 	x.error = exec.Command("convert", "-trim",
-		"-quality", strconv.Itoa(Config.Quality),
-		"-density", strconv.Itoa(Config.Dpi),
-		Config.TempDirectory+id+".pdf", Config.CacheDirectory+id+".png").Run()
+		"-quality", strconv.Itoa(common.Config.Quality),
+		"-density", strconv.Itoa(common.Config.Dpi),
+		common.Config.TempDirectory+id+".pdf", common.Config.CacheDirectory+id+".png").Run()
 
 }
 
-func (x *xelatexImagemagickRenderer) deleteTemporaryFiles(id ID) {
+func (x *XelatexImagemagickRenderer) deleteTemporaryFiles(id common.ID) {
 	if x.error != nil {
 		return
 	}
 
-	files, err := filepath.Glob(Config.TempDirectory + string(id) + ".*")
+	files, err := filepath.Glob(common.Config.TempDirectory + string(id) + ".*")
 	if err != nil {
-		logError(err)
+		common.LogError(err)
 		return
 	}
 	for _, file := range files {
-		tryLogError(os.Remove(file))
+		common.TryLogError(os.Remove(file))
 	}
 }
 
-func (x *xelatexImagemagickRenderer) err() error {
+func (x *XelatexImagemagickRenderer) err() error {
 	return x.error
 }
 
 // renderScroll takes a scroll ID and a renderer to create a PNG image from
 // that scroll.
-func renderScroll(id ID, renderer latexToPngRenderer) error {
-	if isUpToDate(id) {
+func renderScroll(id common.ID, renderer latexToPngRenderer) error {
+	if common.IsUpToDate(id) {
 		return nil
 	}
 
 	renderer.scrollToLatex(id)
 	renderer.latexToPdf(id)
 	renderer.pdfToPng(id)
-	tryLogError(renderer.err())
+	common.TryLogError(renderer.err())
 	renderer.deleteTemporaryFiles(id)
 
 	return errors.Wrap(renderer.err(), "rendering")

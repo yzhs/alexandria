@@ -6,7 +6,7 @@
 // See LICENSE or go to https://github.com/yzhs/alexandria/LICENSE for full
 // license details.
 
-package alexandria
+package common
 
 // ID holds UUID identifying a scroll.
 type ID string
